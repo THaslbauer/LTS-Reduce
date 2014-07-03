@@ -1,5 +1,6 @@
 package bisim;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class LTS {
@@ -18,16 +19,71 @@ public class LTS {
 		throw new UnsupportedOperationException();
 	}
 	
+	public List<State> reaches(State start){
+		List<State> reach = new LinkedList<State>();
+		reach.add(start);
+		for(Transition trans : transitions){
+			if(start.equals(trans.getStart()))
+				reach.add(trans.getEnd());
+		}
+		return reach;
+	}
+	
 	public boolean reachable(State start, State end){
-		//TODO implement
-		throw new UnsupportedOperationException();
+		List<State> reach = this.reaches(start); 
+		return reach.contains(end);
 	}
 	
-	public boolean taureachable(State start, State end){
-		//TODO implement
-		throw new UnsupportedOperationException();
+	public boolean reachableWith(State start, State end, Action act){
+		List<State> reach = this.reaches(start);
+		if (reach.contains(end)){
+			List<Transition> transitions = getTransitions();
+			for(Transition trans : transitions){
+				if(trans.getAction().equals(act))
+					return true;
+			}
+		}
+		if(start.equals(end) && act.equals(Action.TAU))
+			return true;
+		return false;
 	}
 	
+	public boolean taureachableWith(State start, State end, Action act){
+		if (reachableWith(start, end, act))
+			return true;
+		List<State> reach = reaches(start);
+		boolean found = false;
+		for(State state : reach){
+			if(!state.equals(start) && getTransitions(start, state).contains(Action.TAU))
+				found |= taureachableWith(state, end, act, reach);
+		}
+		return found;
+	}
+	
+	private boolean taureachableWith(State start, State end, Action act, List<State> visited){
+		if(reachableWith(start, end, act))
+			return true;
+		List<State> reach = reaches(start);
+		boolean found = false;
+		for(State state : reach){
+			if(!(reach.contains(state))){
+				if(getTransitions(start, state).contains(Action.TAU))
+					found |= taureachableWith(state, end, act, reach);
+				if(getTransitions(start, state).contains(act))
+					found |= taureachableWith(state, end, Action.TAU);
+			}
+		}
+		return found;
+	}
+	
+	public List<Transition> getTransitions(State start, State end){
+		List<Transition> paths = new LinkedList<Transition>();
+		for(Transition trans : transitions){
+			if(trans.getStart().equals(start) && trans.getEnd().equals(end))
+				paths.add(trans);
+		}
+		return paths;
+	}
 	public boolean bisimilarTo(LTS lts){
 		//TODO implement
 		throw new UnsupportedOperationException();
