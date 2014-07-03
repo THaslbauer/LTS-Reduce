@@ -5,12 +5,12 @@ import java.util.List;
 public class LTS {
 	private List<State> states;
 	private List<Transition> transitions;
-	private List<Action> act;
+	private State start;
 
-	public LTS (List<State> states, List<Transition> transitions, List<Action> act) {
+	public LTS (List<State> states, List<Transition> transitions, State start) {
 		this.states = states;
 		this.transitions = transitions;
-		this.act = act;
+		this.start = start;
 	}
 
 	public static LTS reduce(LTS lts){
@@ -40,16 +40,15 @@ public class LTS {
 		return transitions;
 	}
 
-	public List<Action> getAct() {
-		return act;
+	public State getStart(){
+		return start;
 	}
-	
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((act == null) ? 0 : act.hashCode());
+		result = prime * result + ((start == null) ? 0 : start.hashCode());
 		result = prime * result + ((states == null) ? 0 : states.hashCode());
 		result = prime * result
 				+ ((transitions == null) ? 0 : transitions.hashCode());
@@ -66,10 +65,10 @@ public class LTS {
 		if (getClass() != obj.getClass())
 			return false;
 		LTS other = (LTS) obj;
-		if (act == null) {
-			if (other.act != null)
+		if (start == null) {
+			if (other.start != null)
 				return false;
-		} else if (!act.equals(other.act))
+		} else if (!start.equals(other.start))
 			return false;
 		if (states == null) {
 			if (other.states != null)
