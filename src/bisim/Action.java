@@ -2,6 +2,8 @@ package bisim;
 
 public class Action {
 	final private String action;
+	static final public Action TAU = new Action();
+	
 	
 	public Action(){
 		this.action = "tau";
