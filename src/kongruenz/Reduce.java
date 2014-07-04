@@ -1,4 +1,4 @@
-package bisim;
+package kongruenz;
 
 public class Reduce {
 

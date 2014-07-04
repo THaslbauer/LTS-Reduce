@@ -1,9 +1,11 @@
-package bisim;
+package kongruenz;
 
 public class State {
 	final private String state;
 	
 	public State(String name) {
+		if(name == null)
+			throw new IllegalArgumentException("State needs a name!");
 		this.state = name;
 	}
 	
@@ -34,5 +36,10 @@ public class State {
 		} else if (!state.equals(other.state))
 			return false;
 		return true;
+	}
+	
+	@Override
+	public String toString() {
+		return this.state;
 	}
 }

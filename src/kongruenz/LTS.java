@@ -1,17 +1,26 @@
-package bisim;
+package kongruenz;
 
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class LTS {
-	private List<State> states;
-	private List<Transition> transitions;
+	private Set<State> states;
+	private Set<Transition> transitions;
+	private Set<Action> act;
 	private State start;
 
 	public LTS (List<State> states, List<Transition> transitions, State start) {
-		this.states = states;
-		this.transitions = transitions;
+		this.states = new HashSet<State>();
+		if(!this.states.addAll(states))
+			throw new IllegalArgumentException();
+		this.transitions = new HashSet<Transition>();
+		if(!this.transitions.addAll(transitions))
+				throw new IllegalArgumentException();
 		this.start = start;
+		for(Transition trans : this.transitions){
+			act.add(trans.getAction());
+		}
 	}
 
 	public static LTS reduce(LTS lts){
@@ -19,8 +28,8 @@ public class LTS {
 		throw new UnsupportedOperationException();
 	}
 	
-	public List<State> reaches(State start){
-		List<State> reach = new LinkedList<State>();
+	public Set<State> post(State start){
+		Set<State> reach = new HashSet<State>();
 		reach.add(start);
 		for(Transition trans : transitions){
 			if(start.equals(trans.getStart()))
@@ -30,14 +39,14 @@ public class LTS {
 	}
 	
 	public boolean reachable(State start, State end){
-		List<State> reach = this.reaches(start); 
+		Set<State> reach = this.post(start); 
 		return reach.contains(end);
 	}
 	
 	public boolean reachableWith(State start, State end, Action act){
-		List<State> reach = this.reaches(start);
+		Set<State> reach = this.post(start);
 		if (reach.contains(end)){
-			List<Transition> transitions = getTransitions();
+			Set<Transition> transitions = getTransitions();
 			for(Transition trans : transitions){
 				if(trans.getAction().equals(act))
 					return true;
@@ -51,35 +60,46 @@ public class LTS {
 	public boolean taureachableWith(State start, State end, Action act){
 		if (reachableWith(start, end, act))
 			return true;
-		List<State> reach = reaches(start);
+		Set<State> reach = post(start);
 		boolean found = false;
-		for(State state : reach){
-			if(!state.equals(start) && getTransitions(start, state).contains(Action.TAU))
-				found |= taureachableWith(state, end, act, reach);
-		}
+//		synchronized(reach){
+			for(State state : reach){
+				if(!state.equals(start)) {
+					if(getTransitions(start, state).contains(new Transition(start, state, Action.TAU)))
+						found |= taureachableWith(state, end, act, reach);
+					if(getTransitions(start, state).contains(new Transition(start, state, act)))
+						found |= taureachableWith(state, end, Action.TAU, reach);
+				}
+			}
+//		}
 		return found;
 	}
 	
-	private boolean taureachableWith(State start, State end, Action act, List<State> visited){
+	private boolean taureachableWith(State start, State end, Action act, Set<State> visited){
 		if(reachableWith(start, end, act))
 			return true;
-		List<State> reach = reaches(start);
+		Set<State> reach = post(start);
 		boolean found = false;
 		for(State state : reach){
-			if(!(reach.contains(state))){
-				if(getTransitions(start, state).contains(Action.TAU))
-					found |= taureachableWith(state, end, act, reach);
-				if(getTransitions(start, state).contains(act))
-					found |= taureachableWith(state, end, Action.TAU);
-			}
+//			synchronized(visited){
+				if(!(visited.contains(state))){
+					if(getTransitions(start, state).contains(new Transition(start, state, Action.TAU))){
+						visited.addAll(reach);
+						found |= taureachableWith(state, end, act, visited);
+					}
+					if(getTransitions(start, state).contains(new Transition(start, state, act))){
+						found |= taureachableWith(state, end, Action.TAU);
+					}
+				}
+//			}
 		}
 		return found;
 	}
 	
-	public List<Transition> getTransitions(State start, State end){
-		List<Transition> paths = new LinkedList<Transition>();
+	public Set<Transition> getTransitions(State start, State follower){
+		Set<Transition> paths = new HashSet<Transition>();
 		for(Transition trans : transitions){
-			if(trans.getStart().equals(start) && trans.getEnd().equals(end))
+			if(trans.getStart().equals(start) && trans.getEnd().equals(follower))
 				paths.add(trans);
 		}
 		return paths;
@@ -88,11 +108,11 @@ public class LTS {
 		//TODO implement
 		throw new UnsupportedOperationException();
 	}
-	public List<State> getStates() {
+	public Set<State> getStates() {
 		return states;
 	}
 
-	public List<Transition> getTransitions() {
+	public Set<Transition> getTransitions() {
 		return transitions;
 	}
 

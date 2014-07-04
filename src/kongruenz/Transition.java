@@ -1,4 +1,4 @@
-package bisim;
+package kongruenz;
 
 public class Transition {
 	final private State start;
@@ -6,18 +6,28 @@ public class Transition {
 	final private Action action;
 	
 	public Transition(State start, State end){
+		if(start == null || end == null)
+			throw new IllegalArgumentException("Start and End need to be specified!");
 		this.start = start;
 		this.end = end;
 		this.action = new Action();
 	}
 	
 	public Transition(State start, State end, Action action){
+		if(start == null || end == null)
+			throw new IllegalArgumentException("Start and End need to be specified!");
+		if(action == null)
+			action = Action.TAU;
 		this.start = start;
 		this.end = end;
 		this.action = action;
 	}
 	
 	public Transition(String start, String end, String action){
+		if(start == null || end == null)
+			throw new IllegalArgumentException("Start and End need to be specified!");
+		if(action == null)
+			action = "tau";
 		this.start = new State(start);
 		this.end = new State(end);
 		this.action = new Action(action);
@@ -70,6 +80,11 @@ public class Transition {
 		} else if (!start.equals(other.start))
 			return false;
 		return true;
+	}
+	
+	@Override
+	public String toString() {
+		return start.toString()+" -> "+end.toString()+" with "+action.toString();
 	}
 	
 }

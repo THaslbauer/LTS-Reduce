@@ -1,4 +1,4 @@
-package bisim;
+package kongruenz;
 
 public class Action {
 	final private String action;
@@ -10,6 +10,8 @@ public class Action {
 	}
 	
 	public Action (String name) {
+		if(name == null)
+			name = "tau";
 		this.action = name;
 	}
 	
