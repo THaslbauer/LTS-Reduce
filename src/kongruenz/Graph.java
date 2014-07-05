@@ -26,12 +26,23 @@ public abstract class Graph {
 		return Collections.unmodifiableSet(vertices);
 	}
 	
+	
+	//TODO: look into the methods using this if removing the start vertex itself causes problems
 	public Set<Vertex> post(Vertex start){
 		Set<Vertex> reach = new HashSet<Vertex>();
 		reach.add(start);
 		for(LabeledEdge trans : this.edges){
 			if(start.equals(trans.getStart()))
 				reach.add(trans.getEnd());
+		}
+		return reach;
+	}
+	
+	public Set<Vertex> pre(Vertex start){
+		Set<Vertex> reach = new HashSet<Vertex>();
+		for(LabeledEdge trans : this.edges){
+			if(start.equals(trans.getEnd()))
+				reach.add(trans.getStart());
 		}
 		return reach;
 	}
@@ -46,7 +57,8 @@ public abstract class Graph {
 		if (reach.contains(end)){
 			Set<LabeledEdge> edges = getEdges();
 			for(LabeledEdge trans : edges){
-				if(trans.getLabel().equals(act))
+				if(trans.getLabel().equals(act)
+						&& trans.getStart().equals(start) && trans.getEnd().equals(end))
 					return true;
 			}
 		}
