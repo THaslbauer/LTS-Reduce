@@ -1,4 +1,4 @@
-package kongruenz;
+package kongruenz.objects;
 
 public class Action {
 	final private String action;

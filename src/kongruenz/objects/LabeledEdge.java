@@ -1,55 +1,56 @@
-package kongruenz;
+package kongruenz.objects;
 
-public class Transition {
-	final private State start;
-	final private State end;
-	final private Action action;
+
+public class LabeledEdge {
+	final private Vertex start;
+	final private Vertex end;
+	final private Action label;
 	
-	public Transition(State start, State end){
+	public LabeledEdge(Vertex start, Vertex end){
 		if(start == null || end == null)
 			throw new IllegalArgumentException("Start and End need to be specified!");
 		this.start = start;
 		this.end = end;
-		this.action = new Action();
+		this.label = new Action();
 	}
 	
-	public Transition(State start, State end, Action action){
+	public LabeledEdge(Vertex start, Vertex end, Action label){
 		if(start == null || end == null)
 			throw new IllegalArgumentException("Start and End need to be specified!");
-		if(action == null)
-			action = Action.TAU;
+		if(label == null)
+			label = Action.TAU;
 		this.start = start;
 		this.end = end;
-		this.action = action;
+		this.label = label;
 	}
 	
-	public Transition(String start, String end, String action){
+	public LabeledEdge(String start, String end, String action){
 		if(start == null || end == null)
 			throw new IllegalArgumentException("Start and End need to be specified!");
 		if(action == null)
 			action = "tau";
-		this.start = new State(start);
-		this.end = new State(end);
-		this.action = new Action(action);
+		this.start = new Vertex(start);
+		this.end = new Vertex(end);
+		this.label = new Action(action);
 	}
 
-	public State getStart() {
+	public Vertex getStart() {
 		return start;
 	}
 
-	public State getEnd() {
+	public Vertex getEnd() {
 		return end;
 	}
 
-	public Action getAction() {
-		return action;
+	public Action getLabel() {
+		return label;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((action == null) ? 0 : action.hashCode());
+		result = prime * result + ((label == null) ? 0 : label.hashCode());
 		result = prime * result + ((end == null) ? 0 : end.hashCode());
 		result = prime * result + ((start == null) ? 0 : start.hashCode());
 		return result;
@@ -63,11 +64,11 @@ public class Transition {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Transition other = (Transition) obj;
-		if (action == null) {
-			if (other.action != null)
+		LabeledEdge other = (LabeledEdge) obj;
+		if (label == null) {
+			if (other.label != null)
 				return false;
-		} else if (!action.equals(other.action))
+		} else if (!label.equals(other.label))
 			return false;
 		if (end == null) {
 			if (other.end != null)
@@ -84,7 +85,7 @@ public class Transition {
 	
 	@Override
 	public String toString() {
-		return start.toString()+" -> "+end.toString()+" with "+action.toString();
+		return start.toString()+" -> "+end.toString()+" with "+label.toString();
 	}
 	
 }

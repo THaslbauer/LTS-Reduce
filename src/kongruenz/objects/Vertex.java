@@ -1,23 +1,23 @@
-package kongruenz;
+package kongruenz.objects;
 
-public class State {
-	final private String state;
+public class Vertex {
+	final private String name;
 	
-	public State(String name) {
+	public Vertex(String name) {
 		if(name == null)
 			throw new IllegalArgumentException("State needs a name!");
-		this.state = name;
+		this.name = name;
 	}
 	
-	public String getState() {
-		return this.state;
+	public String getName() {
+		return this.name;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((state == null) ? 0 : state.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
 
@@ -29,17 +29,17 @@ public class State {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		State other = (State) obj;
-		if (state == null) {
-			if (other.state != null)
+		Vertex other = (Vertex) obj;
+		if (name == null) {
+			if (other.name != null)
 				return false;
-		} else if (!state.equals(other.state))
+		} else if (!name.equals(other.name))
 			return false;
 		return true;
 	}
 	
 	@Override
 	public String toString() {
-		return this.state;
+		return this.name;
 	}
 }

@@ -6,10 +6,10 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import kongruenz.Action;
 import kongruenz.LTS;
-import kongruenz.State;
-import kongruenz.Transition;
+import kongruenz.objects.Action;
+import kongruenz.objects.Vertex;
+import kongruenz.objects.LabeledEdge;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -22,10 +22,10 @@ public class LTSTest {
 	private LTS splitTwoNodesFromStart;
 	private LTS linearThreeNodesTauAtFront;
 	private LTS linearThreeNodesTauInBack;
-	private State start;
-	private State end1;
-	private State end2;
-	private State middle;
+	private Vertex start;
+	private Vertex end1;
+	private Vertex end2;
+	private Vertex middle;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -34,38 +34,38 @@ public class LTSTest {
 
 	@Before
 	public void setUp() throws Exception {
-		start = new State("Start");
-		end1 = new State("End1");
-		List<State> states = new LinkedList<State>();
+		start = new Vertex("Start");
+		end1 = new Vertex("End1");
+		List<Vertex> states = new LinkedList<Vertex>();
 		states.add(start);
 		states.add(end1);
-		List<Transition> transitions = new LinkedList<Transition>();
-		transitions.add(new Transition(start, end1, new Action("a")));
-		linearTwoNodes = new LTS(new LinkedList<State>(states),
-				new LinkedList<Transition>(transitions), start);
-		end2 = new State("End2");
+		List<LabeledEdge> labeledEdges = new LinkedList<LabeledEdge>();
+		labeledEdges.add(new LabeledEdge(start, end1, new Action("a")));
+		linearTwoNodes = new LTS(new LinkedList<Vertex>(states),
+				new LinkedList<LabeledEdge>(labeledEdges), start);
+		end2 = new Vertex("End2");
 		states.add(end2);
-		transitions.add(new Transition(start, end2, new Action("a")));
-		splitTwoNodesFromStart = new LTS(new LinkedList<State>(states),
-				new LinkedList<Transition>(transitions), start);
+		labeledEdges.add(new LabeledEdge(start, end2, new Action("a")));
+		splitTwoNodesFromStart = new LTS(new LinkedList<Vertex>(states),
+				new LinkedList<LabeledEdge>(labeledEdges), start);
 		states.remove(end2);
-		transitions.clear();
-		middle = new State("Middle");
+		labeledEdges.clear();
+		middle = new Vertex("Middle");
 		states.add(middle);
-		transitions.add(new Transition(start, middle, Action.TAU));
-		transitions.add(new Transition(middle, end1, new Action("a")));
-		linearThreeNodesTauAtFront = new LTS(new LinkedList<State>(states),
-				new LinkedList<Transition>(transitions), start);
-		transitions.clear();
-		transitions.add(new Transition(start, middle, new Action("a")));
-		transitions.add(new Transition(middle, end1, Action.TAU));
-		linearThreeNodesTauInBack = new LTS(new LinkedList<State>(states),
-				new LinkedList<Transition>(transitions), start);
+		labeledEdges.add(new LabeledEdge(start, middle, Action.TAU));
+		labeledEdges.add(new LabeledEdge(middle, end1, new Action("a")));
+		linearThreeNodesTauAtFront = new LTS(new LinkedList<Vertex>(states),
+				new LinkedList<LabeledEdge>(labeledEdges), start);
+		labeledEdges.clear();
+		labeledEdges.add(new LabeledEdge(start, middle, new Action("a")));
+		labeledEdges.add(new LabeledEdge(middle, end1, Action.TAU));
+		linearThreeNodesTauInBack = new LTS(new LinkedList<Vertex>(states),
+				new LinkedList<LabeledEdge>(labeledEdges), start);
 	}
 
 	@Test
 	public void testReaches() {
-		Collection<State> nodes = linearTwoNodes.post(start);
+		Collection<Vertex> nodes = linearTwoNodes.post(start);
 		assertTrue("List for linearTwoNodes should only contain 'Start' and 'End1', was "+nodes.toString(),
 				nodes.size() == 2 && nodes.contains(end1) && nodes.contains(start));
 		nodes = splitTwoNodesFromStart.post(start);
@@ -82,8 +82,8 @@ public class LTSTest {
 	
 	@Test
 	public void testGetTransitions() {
-		Collection<Transition> trans = linearThreeNodesTauAtFront.getTransitions(start, middle);
-		assertTrue(trans.contains(new Transition(start, middle, Action.TAU)));
+		Collection<LabeledEdge> trans = linearThreeNodesTauAtFront.getTransitions(start, middle);
+		assertTrue(trans.contains(new LabeledEdge(start, middle, Action.TAU)));
 	}
 	
 	@Test
