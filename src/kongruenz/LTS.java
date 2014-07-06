@@ -4,6 +4,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import kongruenz.objects.Action;
 import kongruenz.objects.Vertex;
 import kongruenz.objects.LabeledEdge;
@@ -21,10 +25,6 @@ public class LTS extends Graph{
 		}
 	}
 
-	public static LTS reduce(LTS lts){
-		//TODO implement
-		throw new UnsupportedOperationException();
-	}
 
 	
 	public boolean taureachableWith(Vertex start, Vertex end, Action act){
@@ -66,10 +66,6 @@ public class LTS extends Graph{
 		return found;
 	}
 	
-	public boolean bisimilarTo(LTS lts){
-		//TODO implement
-		throw new UnsupportedOperationException();
-	}
 
 	public Vertex getStart(){
 		return start;
@@ -112,6 +108,31 @@ public class LTS extends Graph{
 		} else if (!this.edges.equals(other.edges))
 			return false;
 		return true;
+	}
+	
+	public JsonObject ToJson(){
+		
+		
+		JsonObjectBuilder statesBuilder = Json.createObjectBuilder();
+		
+		for (Vertex state : vertices) {
+			
+			JsonArrayBuilder transBuilder = Json.createArrayBuilder();
+			
+			for (LabeledEdge edge : edges){
+				
+				if (edge.getStart().equals(state)) {
+					
+					transBuilder = transBuilder.add(Json.createObjectBuilder().add("label", edge.getLabel().getAction()).add("detailsLabel", false).add("target", edge.getEnd().getName()));
+				}
+			}
+			
+			statesBuilder = statesBuilder.add(state.getName(), Json.createObjectBuilder().add("transitions",transBuilder.build()));
+		}
+		
+		JsonObject LTS = Json.createObjectBuilder().add("initialState" , start.getName()).add("states", statesBuilder.build()).build();
+		
+		return LTS;
 	}
 	
 }
