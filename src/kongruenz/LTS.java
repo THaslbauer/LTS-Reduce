@@ -1,6 +1,7 @@
 package kongruenz;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import kongruenz.objects.Action;
@@ -13,6 +14,7 @@ public class LTS extends Graph{
 
 	public LTS (Collection<Vertex> states, Collection<LabeledEdge> transitions, Vertex start) {
 		super(transitions, states);
+		act = new HashSet<Action>();
 		this.start = start;
 		for(LabeledEdge trans : this.edges){
 			act.add(trans.getLabel());

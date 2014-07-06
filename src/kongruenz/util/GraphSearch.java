@@ -17,8 +17,8 @@ import kongruenz.objects.Vertex;
 
 public class GraphSearch {
 private final Graph graph;
-private final int workercount = 3;
-private final boolean FORWARD = true;
+private static final int workercount = 3;
+private static final boolean FORWARD = true;
 
 public GraphSearch(Graph graph){
 	this.graph = graph;
@@ -38,11 +38,7 @@ public boolean findForward(Vertex start, Vertex target, Action path){
 	for(int i = 0; i<workercount; i++){
 		workers[i] = new Worker(comm, finished, target, FORWARD);
 	}
-	while(!comm.isDone())
-		try {
-			finished.await();
-		}
-		catch(InterruptedException e){}
+	comm.waitForDone();
 	return comm.wasFound();
 }
 
@@ -67,7 +63,7 @@ private class Worker extends Thread {
 
 	@Override
 	public void run() {
-		while(!comm.isDone()){
+		while(!comm.workToDo()){
 			comm.checkIn();
 			Vertex v = comm.getVertexToVisit();
 			if(v != null){
@@ -173,14 +169,36 @@ private class Communicator {
 			status.release();
 		}
 		catch(Exception e){}
+		notifyAll();
 	}
 	
 	synchronized public void found() {
 		found = true;
 	}
 	
-	synchronized public boolean isDone(){
-		return ((status.availablePermits() == 0)&&(toVisit.size() == 0)) || found;
+	synchronized public void waitForDone(){
+		while (!(((status.availablePermits() == 0)&&(toVisit.size() == 0)) || found)){
+			try{
+			wait();
+			}
+			catch(InterruptedException e){}
+		}
+	}
+	
+	synchronized public boolean workToDo(){
+		while(toVisit.size()==0){
+			if(status.availablePermits() != 5){
+				try{
+					wait();
+				}
+				catch(InterruptedException e){
+					return false;
+				}
+			}
+			else
+				return false;
+		}
+		return true;
 	}
 	
 	synchronized public boolean wasFound(){
