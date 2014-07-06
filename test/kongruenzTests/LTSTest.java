@@ -10,6 +10,7 @@ import kongruenz.LTS;
 import kongruenz.objects.Action;
 import kongruenz.objects.Vertex;
 import kongruenz.objects.LabeledEdge;
+import kongruenz.util.GraphSearch;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -18,24 +19,22 @@ import org.junit.Test;
 
 public class LTSTest {
 	
-	private LTS linearTwoNodes;
-	private LTS splitTwoNodesFromStart;
-	private LTS linearThreeNodesTauAtFront;
-	private LTS linearThreeNodesTauInBack;
-	private Vertex start;
-	private Vertex end1;
-	private Vertex end2;
-	private Vertex middle;
+	private static LTS linearTwoNodes;
+	private static LTS splitTwoNodesFromStart;
+	private static LTS linearThreeNodesTauAtFront;
+	private static LTS linearThreeNodesTauInBack;
+	private static LTS linearThreeNodesOnlyTau;
+	private static Vertex start;
+	private static Vertex end1;
+	private static Vertex end2;
+	private static Vertex middle;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		
-	}
-
-	@Before
-	public void setUp() throws Exception {
 		start = new Vertex("Start");
 		end1 = new Vertex("End1");
+		end2 = new Vertex("End2");
+		middle = new Vertex("Middle");
 		List<Vertex> states = new LinkedList<Vertex>();
 		states.add(start);
 		states.add(end1);
@@ -43,14 +42,12 @@ public class LTSTest {
 		labeledEdges.add(new LabeledEdge(start, end1, new Action("a")));
 		linearTwoNodes = new LTS(new LinkedList<Vertex>(states),
 				new LinkedList<LabeledEdge>(labeledEdges), start);
-		end2 = new Vertex("End2");
 		states.add(end2);
 		labeledEdges.add(new LabeledEdge(start, end2, new Action("a")));
 		splitTwoNodesFromStart = new LTS(new LinkedList<Vertex>(states),
 				new LinkedList<LabeledEdge>(labeledEdges), start);
 		states.remove(end2);
 		labeledEdges.clear();
-		middle = new Vertex("Middle");
 		states.add(middle);
 		labeledEdges.add(new LabeledEdge(start, middle, Action.TAU));
 		labeledEdges.add(new LabeledEdge(middle, end1, new Action("a")));
@@ -61,6 +58,14 @@ public class LTSTest {
 		labeledEdges.add(new LabeledEdge(middle, end1, Action.TAU));
 		linearThreeNodesTauInBack = new LTS(new LinkedList<Vertex>(states),
 				new LinkedList<LabeledEdge>(labeledEdges), start);
+		labeledEdges.clear();
+		labeledEdges.add(new LabeledEdge(start, middle));
+		labeledEdges.add(new LabeledEdge(middle, end1));
+		linearThreeNodesOnlyTau = new LTS(states, labeledEdges, start);
+	}
+
+	@Before
+	public void setUp() throws Exception {
 	}
 
 	@Test
@@ -96,5 +101,10 @@ public class LTSTest {
 		reaches = linearThreeNodesTauInBack.taureachableWith(start, end1, new Action("a"));
 		assertTrue("Has to jump over tau in back", reaches);
 	}
-
+	
+	@Test
+	public void testGraphSearch() {
+		GraphSearch searcher = new GraphSearch(linearThreeNodesOnlyTau);
+		assertTrue(searcher.findForward(start, end1, Action.TAU));
+	}
 }

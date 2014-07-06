@@ -1,6 +1,7 @@
 package kongruenz;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import kongruenz.objects.Action;
@@ -13,6 +14,7 @@ public class LTS extends Graph{
 
 	public LTS (Collection<Vertex> states, Collection<LabeledEdge> transitions, Vertex start) {
 		super(transitions, states);
+		act = new HashSet<Action>();
 		this.start = start;
 		for(LabeledEdge trans : this.edges){
 			act.add(trans.getLabel());
@@ -32,6 +34,7 @@ public class LTS extends Graph{
 		boolean found = false;
 //		synchronized(reach){
 			for(Vertex state : reach){
+				//TODO: erroneous code
 				if(!state.equals(start)) {
 					if(getTransitions(start, state).contains(new LabeledEdge(start, state, Action.TAU)))
 						found |= taureachableWith(state, end, act, reach);
@@ -50,6 +53,7 @@ public class LTS extends Graph{
 		boolean found = false;
 		for(Vertex state : reach){
 //			synchronized(visited){
+			//TODO: erroneous code, what if this happens: 1 to 1 with b, 1 to 2 with tau, looking for 1 to 2 with b
 				if(!(visited.contains(state))){
 					if(getTransitions(start, state).contains(new LabeledEdge(start, state, Action.TAU))){
 						visited.addAll(reach);
