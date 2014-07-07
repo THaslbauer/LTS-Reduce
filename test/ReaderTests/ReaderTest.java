@@ -12,7 +12,7 @@ public class ReaderTest {
 	public static void main(String[] args) {
 		
 		LTSReader Reader = new LTSReader(args);
-		LTS lts = Reader.getOutput();
+		LTS lts = Reader.generateLTSfromJSON();
 		JsonObject LTS = lts.ToJson();
 		Main.openInBrowserDemo(LTS);
 
