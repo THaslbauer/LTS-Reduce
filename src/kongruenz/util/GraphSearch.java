@@ -6,9 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import kongruenz.Graph;
 import kongruenz.objects.Action;
@@ -17,7 +14,7 @@ import kongruenz.objects.Vertex;
 
 public class GraphSearch {
 private final Graph graph;
-private static final int workercount = 3;
+private static final int workercount = 2;
 private static final boolean FORWARD = true;
 
 public GraphSearch(Graph graph){
@@ -27,18 +24,26 @@ public GraphSearch(Graph graph){
 public boolean findForward(Vertex start, Vertex target, Action path){
 	//TODO implement
 	Worker[] workers = new Worker[workercount];
-	Lock syncer = new ReentrantLock();
 	Communicator comm = new Communicator();
 	//Condition with comm.isDone()
-	Condition finished = syncer.newCondition();
 	if(graph.reachableWith(start, target, path))
 		return true;
 	comm.addToToVisit(graph.post(start));
 	comm.addToVisited(graph.post(start));
+	//TODO remove
+	System.out.println("starting workers");
 	for(int i = 0; i<workercount; i++){
-		workers[i] = new Worker(comm, finished, target, FORWARD);
+		workers[i] = new Worker(comm, target, FORWARD);
+		workers[i].start();
 	}
+	//TODO remove
+	System.out.println("main now sleeping");
 	comm.waitForDone();
+	for(int i = 0; i < workercount; i++){
+		workers[i].interrupt();
+	}
+	//TODO remove
+	System.out.println("now done");
 	return comm.wasFound();
 }
 
@@ -50,20 +55,22 @@ public boolean findBackwards(Vertex start, Vertex target, Action path){
 private class Worker extends Thread {
 	
 	private Communicator comm;
-	private Condition wakeUp;
 	private final Vertex target;
 	private final boolean forward;
 	
-	public Worker(Communicator comm, Condition wakeUp, Vertex target, boolean forward){
+	public Worker(Communicator comm, Vertex target, boolean forward){
 		this.comm = comm;
-		this.wakeUp = wakeUp;
 		this.target = target;
 		this.forward = forward;
 	}
 
 	@Override
 	public void run() {
-		while(!comm.workToDo()){
+		//TODO remove
+		System.out.println("worker initialized");
+		while(comm.workToDo()){
+			//TODO remove
+			System.out.println("working");
 			comm.checkIn();
 			Vertex v = comm.getVertexToVisit();
 			if(v != null){
@@ -79,14 +86,9 @@ private class Worker extends Thread {
 				}
 			}
 			comm.checkOut();
-			wakeUp.signalAll();
-			try{
-				wakeUp.await();
-			}
-			catch(InterruptedException e){
-				break;
-			}
 		}
+		//TODO remove
+		System.out.println("worker done");
 	}
 	
 	private boolean reachableWith(Vertex start, Vertex end, Action path){
@@ -129,10 +131,12 @@ private class Communicator {
 			if(!toVisit.contains(v))
 				toVisit.add(v);
 		}
+		notifyAll();
 	}
 	
 	synchronized public void addToToVisit(Vertex vertex){
 		toVisit.add(vertex);
+		notifyAll();
 	}
 	
 	synchronized public Vertex getVertexToVisit(){
@@ -178,27 +182,29 @@ private class Communicator {
 	
 	synchronized public void waitForDone(){
 		while (!(((status.availablePermits() == 0)&&(toVisit.size() == 0)) || found)){
+			notifyAll();
 			try{
+			//TODO remove
+			System.out.println("worker going to sleep");
 			wait();
+			//TODO remove
+			System.out.println("worker woke up");
 			}
 			catch(InterruptedException e){}
 		}
 	}
 	
 	synchronized public boolean workToDo(){
-		while(toVisit.size()==0){
-			if(status.availablePermits() != 5){
+		while(toVisit.size()==0 && status.availablePermits() != 5){
+				notifyAll();
 				try{
 					wait();
 				}
 				catch(InterruptedException e){
 					return false;
 				}
-			}
-			else
-				return false;
 		}
-		return true;
+		return toVisit.size() != 0;
 	}
 	
 	synchronized public boolean wasFound(){

@@ -102,7 +102,7 @@ public class LTSTest {
 		assertTrue("Has to jump over tau in back", reaches);
 	}
 	
-	@Test
+	@Test(timeout = 10000)
 	public void testGraphSearch() {
 		GraphSearch searcher = new GraphSearch(linearThreeNodesOnlyTau);
 		assertTrue(searcher.findForward(start, end1, Action.TAU));
