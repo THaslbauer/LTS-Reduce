@@ -7,6 +7,7 @@ import java.util.Set;
 import kongruenz.objects.Action;
 import kongruenz.objects.Vertex;
 import kongruenz.objects.LabeledEdge;
+import kongruenz.util.GraphSearch;
 
 public class LTS extends Graph{
 	private Set<Action> act;
@@ -30,7 +31,7 @@ public class LTS extends Graph{
 	public boolean taureachableWith(Vertex start, Vertex end, Action act){
 		if (reachableWith(start, end, act))
 			return true;
-		Set<Vertex> reach = post(start);
+		/*Set<Vertex> reach = post(start);
 		boolean found = false;
 //		synchronized(reach){
 			for(Vertex state : reach){
@@ -43,6 +44,22 @@ public class LTS extends Graph{
 				}
 			}
 //		}
+*/		
+		GraphSearch searcher = new GraphSearch(this);
+		boolean found = false;
+		for(LabeledEdge trans : this.edges){
+			if(trans.getLabel().equals(act)){
+				System.out.println(trans.getLabel().getAction());
+				if(trans.getStart().equals(start))
+					found |= searcher.findForward(trans.getEnd(), end, Action.TAU);
+				if(trans.getEnd().equals(end))
+					found |= searcher.findBackwards(trans.getStart(), start, Action.TAU);
+				else
+					found |= (searcher.findBackwards(trans.getStart(), start, Action.TAU)
+						&& searcher.findForward(trans.getEnd(), end, Action.TAU));
+				System.out.println(searcher.findBackwards(trans.getStart(), start, Action.TAU));
+			}
+		}
 		return found;
 	}
 	
