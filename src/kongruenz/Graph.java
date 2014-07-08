@@ -2,7 +2,9 @@ package kongruenz;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import kongruenz.objects.Action;
@@ -12,10 +14,28 @@ import kongruenz.objects.Vertex;
 public abstract class Graph {
 	final protected Set<LabeledEdge> edges;
 	final protected Set<Vertex> vertices;
+	final protected Map<Vertex, Set<LabeledEdge>> edgesByStart;
+	final protected Map<Vertex, Set<LabeledEdge>> edgesByEnd;
 	
 	public Graph(Collection<LabeledEdge> edges, Collection<Vertex> vertices) {
 		this.edges = new HashSet<>(edges);
 		this.vertices = new HashSet<>(vertices);
+		this.edgesByStart = new HashMap<>();
+		this.edgesByEnd = new HashMap<>();
+		//TODO Debug code
+		Set<LabeledEdge> bla = new HashSet<>();
+		for(Vertex vertex : vertices){
+			this.edgesByStart.put(vertex, bla);
+			this.edgesByEnd.put(vertex, new HashSet<LabeledEdge>());
+		}
+		for(LabeledEdge trans : edges){
+			this.edgesByStart.get(trans.getStart()).add(trans);
+			this.edgesByEnd.get(trans.getEnd()).add(trans);
+		}
+		//TODO Debug code
+		for(Vertex key : edgesByEnd.keySet()){
+			System.out.println(edgesByEnd.get(key));
+		}
 	}
 	
 	public Set<LabeledEdge> getEdges() {
@@ -30,19 +50,34 @@ public abstract class Graph {
 	//TODO: look into the methods using this if removing the start vertex itself causes problems
 	public Set<Vertex> post(Vertex start){
 		Set<Vertex> reach = new HashSet<Vertex>();
-		reach.add(start);
-		for(LabeledEdge trans : this.edges){
+/*		for(LabeledEdge trans : this.edges){
 			if(start.equals(trans.getStart()))
 				reach.add(trans.getEnd());
+		}*/
+		if(this.edgesByStart.get(start) == null)
+			return reach;
+		for(LabeledEdge trans : this.edgesByStart.get(start)){
+			reach.add(trans.getEnd());
 		}
 		return reach;
+		
 	}
 	
 	public Set<Vertex> pre(Vertex start){
 		Set<Vertex> reach = new HashSet<Vertex>();
-		for(LabeledEdge trans : this.edges){
+/*		for(LabeledEdge trans : this.edges){
 			if(start.equals(trans.getEnd()))
 				reach.add(trans.getStart());
+		}*/
+		//TODO Debug Code
+		System.out.println("start the for loop "+edgesByEnd.get(start)+" at Vertex "+start);
+		if(this.edgesByEnd.get(start) == null)
+			return reach;
+		for(LabeledEdge trans : this.edgesByEnd.get(start)){
+			//TODO Debug Code
+			System.out.println("doing for loop "+trans);
+			assert(trans.getStart()!= null);
+			reach.add(trans.getStart());
 		}
 		return reach;
 	}

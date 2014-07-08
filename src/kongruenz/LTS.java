@@ -31,20 +31,6 @@ public class LTS extends Graph{
 	public boolean taureachableWith(Vertex start, Vertex end, Action act){
 		if (reachableWith(start, end, act))
 			return true;
-		/*Set<Vertex> reach = post(start);
-		boolean found = false;
-//		synchronized(reach){
-			for(Vertex state : reach){
-				//TODO: erroneous code
-				if(!state.equals(start)) {
-					if(getTransitions(start, state).contains(new LabeledEdge(start, state, Action.TAU)))
-						found |= taureachableWith(state, end, act, reach);
-					if(getTransitions(start, state).contains(new LabeledEdge(start, state, act)))
-						found |= taureachableWith(state, end, Action.TAU, reach);
-				}
-			}
-//		}
-*/		
 		GraphSearch searcher = new GraphSearch(this);
 		boolean found = false;
 		for(LabeledEdge trans : this.edges){

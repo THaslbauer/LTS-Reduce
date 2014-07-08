@@ -71,12 +71,12 @@ public class LTSTest {
 	@Test
 	public void testReaches() {
 		Collection<Vertex> nodes = linearTwoNodes.post(start);
-		assertTrue("List for linearTwoNodes should only contain 'Start' and 'End1', was "+nodes.toString(),
-				nodes.size() == 2 && nodes.contains(end1) && nodes.contains(start));
+		assertTrue("List for linearTwoNodes should only contain and 'End1', was "+nodes.toString(),
+				nodes.size() == 1 && nodes.contains(end1));
 		nodes = splitTwoNodesFromStart.post(start);
-		assertTrue("List for splitTwoNodesFromStart should only contain 'Start', 'End1' and 'End2', was "
+		assertTrue("List for splitTwoNodesFromStart should only contain 'End1' and 'End2', was "
 				+nodes.toString(),
-				nodes.size() == 3 && nodes.contains(end1) && nodes.contains(end2) && nodes.contains(start));
+				nodes.size() == 2 && nodes.contains(end1) && nodes.contains(end2));
 	}
 	
 	@Test
