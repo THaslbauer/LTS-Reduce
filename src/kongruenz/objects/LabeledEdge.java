@@ -1,29 +1,53 @@
 package kongruenz.objects;
 
-
+/**
+ * Implementation of a labeled edge for a graph
+ * @author Thomas
+ *
+ */
 public class LabeledEdge {
 	final private Vertex start;
 	final private Vertex end;
 	final private Action label;
 	
+	/**
+	 * Constructor expects start vertex, end vertex, creates a tau transition
+	 * @param start
+	 * @param end
+	 * @throws IllegalArgumentException If start or end vertex are null.
+	 */
 	public LabeledEdge(Vertex start, Vertex end){
 		if(start == null || end == null)
 			throw new IllegalArgumentException("Start and End need to be specified!");
 		this.start = start;
 		this.end = end;
-		this.label = new Action();
+		this.label = Action.TAU;
 	}
 	
+	/**
+	 * Constructor for creating a named transition from start to end vertex, with action label
+	 * @param start
+	 * @param end
+	 * @param label
+	 * @throws IllegalArgumentException If any of the parameters are null
+	 */
 	public LabeledEdge(Vertex start, Vertex end, Action label){
 		if(start == null || end == null)
 			throw new IllegalArgumentException("Start and End need to be specified!");
 		if(label == null)
-			label = Action.TAU;
+			throw new IllegalArgumentException("Needs a label.");
 		this.start = start;
 		this.end = end;
 		this.label = label;
 	}
 	
+	/**
+	 * Constructor for creating a transition just from name strings.
+	 * @param start
+	 * @param end
+	 * @param action
+	 * @throws IllegalArgumentException If any of the parameters are null
+	 */
 	public LabeledEdge(String start, String end, String action){
 		if(start == null || end == null)
 			throw new IllegalArgumentException("Start and End need to be specified!");

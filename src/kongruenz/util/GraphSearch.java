@@ -12,15 +12,32 @@ import kongruenz.objects.Action;
 import kongruenz.objects.LabeledEdge;
 import kongruenz.objects.Vertex;
 
+
+/**
+ * Concurrent search object for nodes in a labeled directed graph. 
+ * @author Thomas
+ *
+ */
 public class GraphSearch {
 private final Graph graph;
 private static final int workercount = 2;
 private static final boolean FORWARD = true;
 
+/**
+ * Takes a Graph to create the search object for
+ * @param graph the Graph we want to search through
+ */
 public GraphSearch(Graph graph){
 	this.graph = graph;
 }
 
+/**
+ * Tests if target can be reached from start while only walking over Edges specified by path
+ * @param start The Vertex to start searching from
+ * @param target The Vertex to reach
+ * @param path The Action that is the name of the edges to walk over
+ * @return
+ */
 public boolean findForward(Vertex start, Vertex target, Action path){
 	Worker[] workers = new Worker[workercount];
 	Communicator comm = new Communicator();
@@ -47,6 +64,13 @@ public boolean findForward(Vertex start, Vertex target, Action path){
 	return comm.wasFound();
 }
 
+/**
+ * Find out if start Vertex can be reached from target Vertex while only walking over Edges specified by path
+ * @param start The Vertex we want to reach
+ * @param target The Vertex that we want to see if it reaches
+ * @param path  The Action that is the name of the edges to walk over
+ * @return
+ */
 public boolean findBackwards(Vertex start, Vertex target, Action path){
 	Worker[] workers = new Worker[workercount];
 	Communicator comm = new Communicator();

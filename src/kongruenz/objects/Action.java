@@ -1,20 +1,30 @@
 package kongruenz.objects;
 
+/**
+ * Basic implementation of the label Action for the LabeledEdges of our LTS.
+ * Probably a bit overkill.
+ * @author Thomas
+ *
+ */
 public class Action {
 	final private String action;
-	static final public Action TAU = new Action();
+	static final public Action TAU = new Action("tau");
 	
-	
-	public Action(){
-		this.action = "tau";
-	}
-	
+	/**
+	 * Constructor, wants a name.
+	 * @param name
+	 * @throws IllegalArgumentException if name string was null.
+	 */
 	public Action (String name) {
 		if(name == null)
-			name = "tau";
+			throw new IllegalArgumentException();
 		this.action = name;
 	}
 	
+	/**
+	 * returns the name string.
+	 * @return
+	 */
 	public String getAction(){
 		return this.action;
 	}

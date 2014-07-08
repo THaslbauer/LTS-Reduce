@@ -13,10 +13,21 @@ import kongruenz.objects.Vertex;
 import kongruenz.objects.LabeledEdge;
 import kongruenz.util.GraphSearch;
 
+/** 
+ * Basic implementation of a LTS, extends a Graph.
+ * @author Thomas
+ *
+ */
 public class LTS extends Graph{
 	private Set<Action> act;
 	final private Vertex start;
 
+	/**
+	 * Constructor expects the standard arguments for an LTS
+	 * @param states
+	 * @param transitions
+	 * @param start
+	 */
 	public LTS (Collection<Vertex> states, Collection<LabeledEdge> transitions, Vertex start) {
 		super(transitions, states);
 		act = new HashSet<Action>();
@@ -27,7 +38,13 @@ public class LTS extends Graph{
 	}
 
 
-	
+	/**
+	 * Finds out if the weak Transition with Action act connects start and end
+	 * @param start
+	 * @param end
+	 * @param act
+	 * @return
+	 */
 	public boolean taureachableWith(Vertex start, Vertex end, Action act){
 		if (reachableWith(start, end, act))
 			return true;
