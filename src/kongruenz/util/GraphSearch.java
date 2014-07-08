@@ -22,7 +22,6 @@ public GraphSearch(Graph graph){
 }
 
 public boolean findForward(Vertex start, Vertex target, Action path){
-	//TODO implement
 	Worker[] workers = new Worker[workercount];
 	Communicator comm = new Communicator();
 	//Condition with comm.isDone()
@@ -39,6 +38,7 @@ public boolean findForward(Vertex start, Vertex target, Action path){
 	//TODO remove
 	System.out.println("main now sleeping");
 	comm.waitForDone();
+	System.out.println("seems to be done");
 	for(int i = 0; i < workercount; i++){
 		workers[i].interrupt();
 	}
@@ -48,8 +48,34 @@ public boolean findForward(Vertex start, Vertex target, Action path){
 }
 
 public boolean findBackwards(Vertex start, Vertex target, Action path){
-	//TODO implement
-	return false;
+	Worker[] workers = new Worker[workercount];
+	Communicator comm = new Communicator();
+	//Condition with comm.isDone()
+	if(graph.pre(start).contains(target)){
+		Set<LabeledEdge> edges = graph.getEdges();
+		for(LabeledEdge trans : edges){
+			if(trans.getLabel().equals(path)
+					&& trans.getStart().equals(target) && trans.getEnd().equals(start))
+				return true;
+		}
+	}
+	comm.addToToVisit(graph.pre(start));
+	comm.addToVisited(graph.pre(start));
+	//TODO remove
+	System.out.println("starting workers");
+	for(int i = 0; i<workercount; i++){
+		workers[i] = new Worker(comm, target, !FORWARD);
+		workers[i].start();
+	}
+	//TODO remove
+	System.out.println("main now sleeping");
+	comm.waitForDone();
+	for(int i = 0; i < workercount; i++){
+		workers[i].interrupt();
+	}
+	//TODO remove
+	System.out.println("now done");
+	return comm.wasFound();
 }
 
 private class Worker extends Thread {
@@ -99,7 +125,7 @@ private class Worker extends Thread {
 				Set<LabeledEdge> edges = graph.getEdges();
 				for(LabeledEdge trans : edges){
 					if(trans.getLabel().equals(path)
-							&& trans.getStart().equals(start) && trans.getEnd().equals(end))
+							&& trans.getStart().equals(end) && trans.getEnd().equals(start))
 						return true;
 				}
 			}
@@ -181,30 +207,42 @@ private class Communicator {
 	}
 	
 	synchronized public void waitForDone(){
-		while (!(((status.availablePermits() == 0)&&(toVisit.size() == 0)) || found)){
-			notifyAll();
-			try{
-			//TODO remove
-			System.out.println("worker going to sleep");
-			wait();
-			//TODO remove
-			System.out.println("worker woke up");
-			}
-			catch(InterruptedException e){}
-		}
-	}
-	
-	synchronized public boolean workToDo(){
-		while(toVisit.size()==0 && status.availablePermits() != 5){
+		//TODO fucked up condition for termination not working
+//		if(found){
+//			notifyAll();
+//			return;
+//		}
+//		else{
+			while(!((toVisit.size() == 0) && (status.availablePermits() == workercount))){
 				notifyAll();
 				try{
 					wait();
 				}
-				catch(InterruptedException e){
+				catch (Exception e){}
+			}
+			notifyAll();
+//		}
+	}
+	
+	synchronized public boolean workToDo(){
+		if(toVisit.size() != 0 && !found)
+			return true;
+		while(toVisit.size() == 0){
+			if(status.availablePermits() == workercount){
+				notifyAll();
+				return false;
+			}
+			else{
+				notifyAll();
+				try{
+					wait();
+				}
+				catch (InterruptedException e){
 					return false;
 				}
+			}
 		}
-		return toVisit.size() != 0;
+		return true;
 	}
 	
 	synchronized public boolean wasFound(){

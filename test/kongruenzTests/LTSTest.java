@@ -103,8 +103,16 @@ public class LTSTest {
 	}
 	
 	@Test(timeout = 10000)
-	public void testGraphSearch() {
+	public void testGraphSearchForward() {
 		GraphSearch searcher = new GraphSearch(linearThreeNodesOnlyTau);
 		assertTrue(searcher.findForward(start, end1, Action.TAU));
+		assertFalse(searcher.findForward(start, end2, Action.TAU));
+	}
+	
+	@Test(timeout = 10000)
+	public void testGraphSearchBackwards() {
+		GraphSearch searcher = new GraphSearch(linearThreeNodesOnlyTau);
+		assertTrue(searcher.findBackwards(end1, start, Action.TAU));
+		assertFalse(searcher.findBackwards(end2, start, Action.TAU));
 	}
 }
