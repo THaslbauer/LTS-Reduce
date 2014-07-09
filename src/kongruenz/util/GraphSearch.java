@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
+import java.lang.Runtime;
+
 import kongruenz.Graph;
 import kongruenz.objects.Action;
 import kongruenz.objects.LabeledEdge;
@@ -20,7 +22,7 @@ import kongruenz.objects.Vertex;
  */
 public class GraphSearch {
 private final Graph graph;
-private static final int workercount = 2;
+private static final int workercount = Runtime.getRuntime().availableProcessors();
 private static final boolean FORWARD = true;
 
 /**
@@ -41,7 +43,6 @@ public GraphSearch(Graph graph){
 public boolean findForward(Vertex start, Vertex target, Action path){
 	Worker[] workers = new Worker[workercount];
 	Communicator comm = new Communicator();
-	//Condition with comm.isDone()
 	if(graph.reachableWith(start, target, path))
 		return true;
 	comm.addToToVisit(graph.post(start));
@@ -55,7 +56,6 @@ public boolean findForward(Vertex start, Vertex target, Action path){
 	//TODO remove
 	System.out.println("main now sleeping");
 	comm.waitForDone();
-	System.out.println("seems to be done");
 	for(int i = 0; i < workercount; i++){
 		workers[i].interrupt();
 	}
@@ -163,7 +163,11 @@ private class Worker extends Thread {
 			return graph.pre(start);
 	}
 }
-
+/** 
+ * Handles the termination conditions of the graph search and wraps the lists the workers need
+ * @author Thomas
+ *
+ */
 private class Communicator {
 	private List<Vertex> toVisit;
 	private Set<Vertex> visited;
@@ -230,6 +234,9 @@ private class Communicator {
 		found = true;
 	}
 	
+	/**
+	 * Waits till all the workers are done or something was found.
+	 */
 	synchronized public void waitForDone(){
 		//TODO fucked up condition for termination not working
 //		if(found){
@@ -237,20 +244,28 @@ private class Communicator {
 //			return;
 //		}
 //		else{
-			while(!((toVisit.size() == 0) && (status.availablePermits() == workercount))){
+			while(!((toVisit.size() == 0) && (status.availablePermits() == workercount)) && !found && !Thread.interrupted()){
 				notifyAll();
 				try{
 					wait();
 				}
-				catch (Exception e){}
+				catch (InterruptedException e){
+					break;
+				}
 			}
 			notifyAll();
 //		}
 	}
 	
+	/**
+	 * Checks if the worker still has to do something.
+	 * @return False if interrupted, something was found, or no worker is working anymore and no nodes are to be visited, true otherwise 
+	 */
 	synchronized public boolean workToDo(){
-		if(toVisit.size() != 0 && !found)
-			return true;
+		if(Thread.interrupted())
+			return false;
+		if(toVisit.size() != 0)
+			return !found;
 		while(toVisit.size() == 0){
 			if(status.availablePermits() == workercount){
 				notifyAll();
