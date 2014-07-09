@@ -46,26 +46,23 @@ public class LTS extends Graph{
 	 * @return
 	 */
 	public boolean taureachableWith(Vertex start, Vertex end, Action act){
-		if (reachableWith(start, end, act))
+		this.initSearch();
+		if(start.equals(end))
 			return true;
-		GraphSearch searcher = new GraphSearch(this);
-		boolean found = false;
-		for(LabeledEdge trans : this.edges){
-			if(trans.getLabel().equals(act)){
-				System.out.println(trans.getLabel().getAction());
-				if(trans.getStart().equals(start))
-					found |= searcher.findForward(trans.getEnd(), end, Action.TAU);
-				if(trans.getEnd().equals(end))
-					found |= searcher.findBackwards(trans.getStart(), start, Action.TAU);
-				else
-					found |= (searcher.findBackwards(trans.getStart(), start, Action.TAU)
-						&& searcher.findForward(trans.getEnd(), end, Action.TAU));
-				System.out.println(searcher.findBackwards(trans.getStart(), start, Action.TAU));
-			}
+		for(LabeledEdge trans : this.edgesByAction.get(act)){
+			if(trans.getStart().equals(start) && trans.getEnd().equals(end))
+				return true;
+			if(trans.getStart().equals(start) && searcher.getPostWithTau(trans.getEnd()).contains(end))
+				return true;
+			if(searcher.getPreWithTau(trans.getStart()).contains(start) && trans.getEnd().equals(end))
+				return true;
+			if(searcher.getPreWithTau(trans.getStart()).contains(start)&&searcher.getPostWithTau(trans.getEnd()).contains(end))
+				return true;
 		}
-		return found;
+		return false;
 	}
-	
+
+	/*
 	private boolean taureachableWith(Vertex start, Vertex end, Action act, Set<Vertex> visited){
 		if(reachableWith(start, end, act))
 			return true;
@@ -86,7 +83,7 @@ public class LTS extends Graph{
 //			}
 		}
 		return found;
-	}
+	}*/
 	
 
 	public Vertex getStart(){

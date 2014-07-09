@@ -10,6 +10,7 @@ import java.util.Set;
 import kongruenz.objects.Action;
 import kongruenz.objects.LabeledEdge;
 import kongruenz.objects.Vertex;
+import kongruenz.util.GraphSearch;
 
 /**
  * An Implementation of a Graph
@@ -22,6 +23,7 @@ public abstract class Graph {
 	final protected Map<Vertex, Set<LabeledEdge>> edgesByStart;
 	final protected Map<Vertex, Set<LabeledEdge>> edgesByEnd;
 	final protected Map<Action, Set<LabeledEdge>> edgesByAction;
+	protected GraphSearch searcher;
 	
 	/**
 	 * The Constructor. Takes a Collection of Vertices and a Collection of LabeledEdges connecting those Vertices
@@ -47,12 +49,29 @@ public abstract class Graph {
 		}
 	}
 	
+	public void initSearch(){
+		if(searcher == null)
+			searcher = new GraphSearch(this);
+	}
+	
 	public Set<LabeledEdge> getEdges() {
 		return Collections.unmodifiableSet(edges);
 	}
 	
 	public Set<Vertex> getVertices() {
 		return Collections.unmodifiableSet(vertices);
+	}
+	
+	public Set<LabeledEdge> getEdgesWithStart(Vertex start){
+		return this.edgesByStart.get(start);
+	}
+	
+	public Set<LabeledEdge> getEdgesWithEnd(Vertex end){
+		return this.edgesByEnd.get(end);
+	}
+	
+	public Set<LabeledEdge> getEdgesWithAction(Action act){
+		return this.edgesByAction.get(act);
 	}
 	
 	
