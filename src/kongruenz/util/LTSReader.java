@@ -37,10 +37,11 @@ public class LTSReader {
 
 			throw new IllegalArgumentException("Not an LTS");
 		}
-
+		
 		// -----------------------------------------------------------------//
 		// --------------Variables used in this method----------------------//
-
+		
+		System.out.print("Enter the LTS here:");
 		String LTSText = getString();
 		Set<Vertex> allstates = new HashSet<Vertex>();
 		Set<LabeledEdge> transitions = new HashSet<LabeledEdge>();

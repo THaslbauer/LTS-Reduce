@@ -55,6 +55,24 @@ public abstract class Graph {
 		return Collections.unmodifiableSet(vertices);
 	}
 	
+	/**
+	 * 
+	 *@return A set that contains every action present in this LTS
+	 *
+	 *@author Jeremias
+	 * */
+	public Set<Action> getActions(){
+		
+		Set<Action> actions = new HashSet<Action>();
+		
+		for (LabeledEdge edge : edges){
+			
+			actions.add(edge.getLabel());
+		}
+		
+		return actions;
+	}
+	
 	
 	//TODO: look into the methods using this if removing the start vertex itself causes problems
 	/**
