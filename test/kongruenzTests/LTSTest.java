@@ -94,10 +94,13 @@ public class LTSTest {
 	@Test
 	public void testTaureachableWith() {
 		boolean reaches = false;
+		System.out.println("Two nodes");
 		reaches = linearTwoNodes.taureachableWith(start, start, Action.TAU);
 		assertTrue("Has to find itself with tau", reaches);
+		System.out.println("Three nodes, tau in front");
 		reaches = linearThreeNodesTauAtFront.taureachableWith(start, end1, new Action("a"));
 		assertTrue("Has to jump over tau in front", reaches);
+		System.out.println("Three nodes, tau in back");
 		reaches = linearThreeNodesTauInBack.taureachableWith(start, end1, new Action("a"));
 		assertTrue("Has to jump over tau in back", reaches);
 	}

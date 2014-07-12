@@ -47,9 +47,12 @@ public class LTS extends Graph{
 	 */
 	public boolean taureachableWith(Vertex start, Vertex end, Action act){
 		this.initSearch();
-		if(start.equals(end))
+		if(start.equals(end) && act.equals(Action.TAU))
 			return true;
 		for(LabeledEdge trans : this.edgesByAction.get(act)){
+			//TODO remove
+			System.out.println(searcher.getPreWithTau(trans.getStart()));
+			System.out.println(searcher.getPostWithTau(trans.getEnd()));
 			if(trans.getStart().equals(start) && trans.getEnd().equals(end))
 				return true;
 			if(trans.getStart().equals(start) && searcher.getPostWithTau(trans.getEnd()).contains(end))

@@ -45,16 +45,22 @@ public GraphSearch(final Graph graph){
 			10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 	for(Vertex v : graph.getVertices()){
 		vertices.put(v, new VertexWithPrePost(v));
+	}
+	for(Vertex v : graph.getVertices()){
 		final Vertex w = v;
-		threads.execute(new Runnable(){
-			public void run(){
-				for(LabeledEdge trans : graph.getEdgesWithStart(w)){
-					if(trans.getLabel().equals(Action.TAU))
-						vertices.get(w).addPost(trans.getEnd());
+		synchronized(threads){
+			threads.execute(new Runnable(){
+				public void run(){
+					for(LabeledEdge trans : graph.getEdgesWithStart(w)){
+						if(trans.getLabel().equals(Action.TAU))
+							vertices.get(w).addPost(trans.getEnd());
+					}
+					//TODO remove
+					sysout("added tau-post to "+w+": "+vertices.get(w).getPost());
+					counter.countDown();
 				}
-				counter.countDown();
-			}
-		});
+			});
+		}
 	}
 	try{
 		counter.await();
@@ -62,16 +68,38 @@ public GraphSearch(final Graph graph){
 	catch(InterruptedException e){
 		System.err.println(e.getStackTrace());
 	}
-	//TODO add proliferator
-	Communicator comm = new Communicator();
+	Communicator comm = new Communicator(threads);
+	//TODO remove
+	sysout("proliferating forward");
 	for(Vertex v : graph.getVertices()){
-		threads.execute(new Proliferator(v, graph.pre(v), threads, comm, true));
+		Set<Vertex>preTau = new HashSet<>();
+		for(LabeledEdge trans : graph.getEdgesWithEnd(v)){
+			if(trans.getLabel().equals(Action.TAU))
+				preTau.add(trans.getStart());
+		}
+		synchronized(threads){
+			threads.execute(new Proliferator(v, preTau, threads, comm, true));
+		}
 	}
 	comm.waitForDone();
-	for(Vertex v: graph.getVertices()){
+	//TODO remove
+	sysout("proliferating backwards");
+	for(Vertex v: graph.getVertices()){/*
 		Set<Vertex> postVert = vertices.get(v).getPost();
-		vertices.get(v).clearPost();
-		threads.execute(new Proliferator(v, postVert, threads, comm, false));
+		vertices.get(v).clearPost();*/
+		final Vertex w = v;
+		final Communicator fcomm = comm;
+		synchronized(threads){
+			threads.execute(new Runnable(){
+				public void run(){
+					fcomm.checkIn();
+					for(Vertex u : vertices.get(w).getPost()){
+						vertices.get(u).addPre(vertices.get(w).getPre());
+					}
+					fcomm.checkOut();
+				}
+			});
+		}
 	}
 }
 
@@ -98,21 +126,35 @@ private class Proliferator implements Runnable{
 		this.pre = pre;
 	}
 	public void run(){
+		comm.checkIn();
 		if(pre){
 			if(vertices.get(vert).addPre(verticesToAdd)){
+				//TODO remove
+				sysout("proliferating pre of "+vert+": "+verticesToAdd);
 				for(Vertex v : vertices.get(vert).getPost()){
-					threads.execute(new Proliferator(v, verticesToAdd, threads, comm, pre));
+					synchronized(threads){
+						threads.execute(new Proliferator(v, verticesToAdd, threads, comm, pre));
+					}
 				}
 			}
 		}
 		else{
 			if(vertices.get(vert).addPost(verticesToAdd)){
+				//TODO remove
+				sysout("proliferating post of "+vert+": "+verticesToAdd);
 				for(Vertex v : vertices.get(vert).getPre()){
-					threads.execute(new Proliferator(v, verticesToAdd, threads, comm, pre));
+					synchronized(threads){
+						threads.execute(new Proliferator(v, verticesToAdd, threads, comm, pre));
+					}
 				}
 			}
 		}
+		comm.checkOut();
 	}
+}
+
+public synchronized void sysout(String input){
+	System.out.println(input);
 }
 
 private class VertexWithPrePost {
@@ -166,9 +208,11 @@ private class VertexWithPrePost {
 
 private class Communicator {
 	private Semaphore status;
+	private ThreadPoolExecutor threads;
 	
-	public Communicator(){
+	public Communicator(ThreadPoolExecutor threads){
 		status = new Semaphore(workercount);
+		this.threads = threads;
 	}
 	
 	synchronized public void checkIn(){
@@ -190,7 +234,7 @@ private class Communicator {
 	 * Waits till all the workers are done or something was found.
 	 */
 	synchronized public void waitForDone(){
-		while(status.availablePermits() != workercount){
+		while(!(status.availablePermits() == workercount && threads.getQueue().peek() == null)){
 			try{
 				wait();
 			}

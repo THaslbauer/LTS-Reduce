@@ -36,6 +36,7 @@ public abstract class Graph {
 		this.edgesByStart = new HashMap<>();
 		this.edgesByEnd = new HashMap<>();
 		this.edgesByAction = new HashMap<>();
+		this.searcher = null;
 		for(Vertex vertex : vertices){
 			this.edgesByStart.put(vertex, new HashSet<LabeledEdge>());
 			this.edgesByEnd.put(vertex, new HashSet<LabeledEdge>());
