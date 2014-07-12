@@ -64,6 +64,38 @@ public class LTS extends Graph{
 		}
 		return false;
 	}
+	
+	/**
+	 * Finds all states, that can reach the "start" state with the specified action.
+	 * WARNING: the start state WILL be included if tau is the specified action.
+	 * @param start
+	 * @param act
+	 * @return
+	 */
+	public Set<Vertex> weakPre(Vertex start, Action act){
+		this.initSearch();
+		Set<Vertex> pre = new HashSet<>();
+		if(act.equals(Action.TAU)){
+			pre.add(start);
+			pre.addAll(searcher.getPreWithTau(start));
+			return pre;
+		}
+		for(LabeledEdge trans : this.edgesByEnd.get(start)){
+			if(trans.getLabel().equals(act)){
+				pre.add(trans.getStart());
+				pre.addAll(searcher.getPreWithTau(trans.getStart()));
+			}
+		}
+		for(Vertex v : searcher.getPreWithTau(start)){
+			for(LabeledEdge trans : this.edgesByEnd.get(v)){
+				if(trans.getLabel().equals(act)){
+					pre.add(trans.getStart());
+					pre.addAll(searcher.getPreWithTau(trans.getStart()));
+				}
+			}
+		}
+		return pre;
+	}
 
 	/*
 	private boolean taureachableWith(Vertex start, Vertex end, Action act, Set<Vertex> visited){
