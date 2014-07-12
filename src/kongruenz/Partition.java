@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import kongruenz.objects.Action;
 import kongruenz.objects.LabeledEdge;
 import kongruenz.objects.Vertex;
 
@@ -46,11 +47,12 @@ public class Partition {
 	 * 
 	 * 
 	 * */
-	
 	synchronized public LTS generateLTSfromPartition(){
+		
 		
 		Map<Set<Vertex>, Vertex> set_vertex_map = new HashMap<Set<Vertex>, Vertex>();
 		Set<Vertex> new_states = new HashSet<Vertex>();
+		
 		int i = 0;
 		for (Set<Vertex> block : P){
 			
@@ -78,7 +80,7 @@ public class Partition {
 		Set<LabeledEdge> newEdges = new HashSet<LabeledEdge>();
 		
 		for(LabeledEdge edge : lts.getEdges()){
-			
+			if (edge.getLabel() != Action.TAU || edge.getStart() == lts.getStart())
 			newEdges.add(new LabeledEdge(set_vertex_map.get(vertex_set_map.get(edge.getStart())), set_vertex_map.get(vertex_set_map.get(edge.getEnd())), edge.getLabel()));
 		}
 		
@@ -93,7 +95,7 @@ public class Partition {
 	 * The set with which to replace everything in the old partition
 	 * @return The new partition
 	 * 
-	 * 
+	 * @author Jeremias
 	 * */
 	synchronized public Partition generateNewPartition(Set<Vertex> newP){
 		
@@ -110,6 +112,8 @@ public class Partition {
 	 * This method forms the union of two partitions' P fields
 	 * @param partition
 	 * 		The partition to be added to this one
+	 * 
+	 * @author Jeremias
 	 * */
 	synchronized public void unite(Partition partition){
 		

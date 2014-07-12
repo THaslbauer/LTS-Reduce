@@ -2,6 +2,8 @@ package kongruenz;
 
 import java.util.concurrent.ForkJoinPool;
 
+import com.pseuco.project.Main;
+
 import kongruenz.util.LTSReader;
 
 
@@ -16,6 +18,8 @@ public class Reduce {
 		
 		Partition reducedPartition = pool.invoke(reduce0);
 		
+		LTS reducedLTS = reducedPartition.generateLTSfromPartition();
+		Main.openInBrowserDemo(reducedLTS.ToJson());
 		//TODO: finish the main method
 	}
 
