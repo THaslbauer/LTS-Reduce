@@ -10,6 +10,7 @@ import java.util.Set;
 import kongruenz.objects.Action;
 import kongruenz.objects.LabeledEdge;
 import kongruenz.objects.Vertex;
+import kongruenz.util.GraphSearch;
 
 /**
  * An Implementation of a Graph
@@ -22,6 +23,7 @@ public abstract class Graph {
 	final protected Map<Vertex, Set<LabeledEdge>> edgesByStart;
 	final protected Map<Vertex, Set<LabeledEdge>> edgesByEnd;
 	final protected Map<Action, Set<LabeledEdge>> edgesByAction;
+	protected GraphSearch searcher;
 	
 	/**
 	 * The Constructor. Takes a Collection of Vertices and a Collection of LabeledEdges connecting those Vertices
@@ -34,6 +36,7 @@ public abstract class Graph {
 		this.edgesByStart = new HashMap<>();
 		this.edgesByEnd = new HashMap<>();
 		this.edgesByAction = new HashMap<>();
+		this.searcher = null;
 		for(Vertex vertex : vertices){
 			this.edgesByStart.put(vertex, new HashSet<LabeledEdge>());
 			this.edgesByEnd.put(vertex, new HashSet<LabeledEdge>());
@@ -45,6 +48,11 @@ public abstract class Graph {
 				edgesByAction.put(trans.getLabel(), new HashSet<LabeledEdge>());
 			this.edgesByAction.get(trans.getLabel()).add(trans);
 		}
+	}
+	
+	public void initSearch(){
+		if(searcher == null)
+			searcher = new GraphSearch(this);
 	}
 	
 	public Set<LabeledEdge> getEdges() {
@@ -71,6 +79,18 @@ public abstract class Graph {
 		}
 		
 		return actions;
+	}
+	
+	public Set<LabeledEdge> getEdgesWithStart(Vertex start){
+		return this.edgesByStart.get(start);
+	}
+	
+	public Set<LabeledEdge> getEdgesWithEnd(Vertex end){
+		return this.edgesByEnd.get(end);
+	}
+	
+	public Set<LabeledEdge> getEdgesWithAction(Action act){
+		return this.edgesByAction.get(act);
 	}
 	
 	

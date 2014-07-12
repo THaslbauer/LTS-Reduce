@@ -24,10 +24,13 @@ public class LTSTest {
 	private static LTS linearThreeNodesTauAtFront;
 	private static LTS linearThreeNodesTauInBack;
 	private static LTS linearThreeNodesOnlyTau;
+	private static LTS cycle;
 	private static Vertex start;
 	private static Vertex end1;
 	private static Vertex end2;
 	private static Vertex middle;
+	private static Vertex middle2;
+	private static Vertex middle3;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -35,6 +38,8 @@ public class LTSTest {
 		end1 = new Vertex("End1");
 		end2 = new Vertex("End2");
 		middle = new Vertex("Middle");
+		middle2 = new Vertex("Middle2");
+		middle3 = new Vertex("Middle3");
 		List<Vertex> states = new LinkedList<Vertex>();
 		states.add(start);
 		states.add(end1);
@@ -62,6 +67,17 @@ public class LTSTest {
 		labeledEdges.add(new LabeledEdge(start, middle));
 		labeledEdges.add(new LabeledEdge(middle, end1));
 		linearThreeNodesOnlyTau = new LTS(states, labeledEdges, start);
+		labeledEdges.clear();
+		states.clear();
+		states.add(start);
+		states.add(middle);
+		states.add(middle2);
+		states.add(middle3);
+		labeledEdges.add(new LabeledEdge(start, middle));
+		labeledEdges.add(new LabeledEdge(middle, middle2));
+		labeledEdges.add(new LabeledEdge(middle2, middle3));
+		labeledEdges.add(new LabeledEdge(middle3, middle));
+		cycle = new LTS(states, labeledEdges, start);
 	}
 
 	@Before
@@ -94,25 +110,16 @@ public class LTSTest {
 	@Test
 	public void testTaureachableWith() {
 		boolean reaches = false;
+		System.out.println("Two nodes");
 		reaches = linearTwoNodes.taureachableWith(start, start, Action.TAU);
 		assertTrue("Has to find itself with tau", reaches);
+		System.out.println("Three nodes, tau in front");
 		reaches = linearThreeNodesTauAtFront.taureachableWith(start, end1, new Action("a"));
 		assertTrue("Has to jump over tau in front", reaches);
+		System.out.println("Three nodes, tau in back");
 		reaches = linearThreeNodesTauInBack.taureachableWith(start, end1, new Action("a"));
 		assertTrue("Has to jump over tau in back", reaches);
-	}
-	
-	@Test(timeout = 10000)
-	public void testGraphSearchForward() {
-		GraphSearch searcher = new GraphSearch(linearThreeNodesOnlyTau);
-		assertTrue(searcher.findForward(start, end1, Action.TAU));
-		assertFalse(searcher.findForward(start, end2, Action.TAU));
-	}
-	
-	@Test(timeout = 10000)
-	public void testGraphSearchBackwards() {
-		GraphSearch searcher = new GraphSearch(linearThreeNodesOnlyTau);
-		assertTrue(searcher.findBackwards(end1, start, Action.TAU));
-		assertFalse(searcher.findBackwards(end2, start, Action.TAU));
+		reaches = cycle.taureachableWith(start, middle3, Action.TAU);
+		assertTrue("Has to get what a cycle is", reaches);
 	}
 }

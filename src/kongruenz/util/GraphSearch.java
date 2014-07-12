@@ -1,12 +1,19 @@
 package kongruenz.util;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.Semaphore;
-
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.lang.Runtime;
 
 import kongruenz.Graph;
@@ -22,197 +29,190 @@ import kongruenz.objects.Vertex;
  */
 public class GraphSearch {
 private final Graph graph;
-private static final int workercount = Runtime.getRuntime().availableProcessors();
+private static final int workercount = Runtime.getRuntime().availableProcessors()+1;
 private static final boolean FORWARD = true;
+private final Map<Vertex, VertexWithPrePost> vertices;
 
 /**
  * Takes a Graph to create the search object for
  * @param graph the Graph we want to search through
  */
-public GraphSearch(Graph graph){
+public GraphSearch(final Graph graph){
 	this.graph = graph;
-}
-
-/**
- * Tests if target can be reached from start while only walking over Edges specified by path
- * @param start The Vertex to start searching from
- * @param target The Vertex to reach
- * @param path The Action that is the name of the edges to walk over
- * @return
- */
-public boolean findForward(Vertex start, Vertex target, Action path){
-	Worker[] workers = new Worker[workercount];
-	Communicator comm = new Communicator();
-	if(graph.reachableWith(start, target, path))
-		return true;
-	comm.addToToVisit(graph.post(start));
-	comm.addToVisited(graph.post(start));
-	//TODO remove
-	System.out.println("starting workers");
-	for(int i = 0; i<workercount; i++){
-		workers[i] = new Worker(comm, target, FORWARD);
-		workers[i].start();
+	final CountDownLatch counter = new CountDownLatch(graph.getVertices().size());
+	vertices = new HashMap<>();
+	ThreadPoolExecutor threads = new ThreadPoolExecutor(workercount, workercount,
+			10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+	for(Vertex v : graph.getVertices()){
+		vertices.put(v, new VertexWithPrePost(v));
 	}
-	//TODO remove
-	System.out.println("main now sleeping");
-	comm.waitForDone();
-	for(int i = 0; i < workercount; i++){
-		workers[i].interrupt();
-	}
-	//TODO remove
-	System.out.println("now done");
-	return comm.wasFound();
-}
-
-/**
- * Find out if start Vertex can be reached from target Vertex while only walking over Edges specified by path
- * @param start The Vertex we want to reach
- * @param target The Vertex that we want to see if it reaches
- * @param path  The Action that is the name of the edges to walk over
- * @return
- */
-public boolean findBackwards(Vertex start, Vertex target, Action path){
-	Worker[] workers = new Worker[workercount];
-	Communicator comm = new Communicator();
-	//Condition with comm.isDone()
-	if(graph.pre(start).contains(target)){
-		Set<LabeledEdge> edges = graph.getEdges();
-		for(LabeledEdge trans : edges){
-			if(trans.getLabel().equals(path)
-					&& trans.getStart().equals(target) && trans.getEnd().equals(start))
-				return true;
+	for(Vertex v : graph.getVertices()){
+		final Vertex w = v;
+		synchronized(threads){
+			threads.execute(new Runnable(){
+				public void run(){
+					for(LabeledEdge trans : graph.getEdgesWithStart(w)){
+						if(trans.getLabel().equals(Action.TAU))
+							vertices.get(w).addPost(trans.getEnd());
+					}
+					//TODO remove
+					sysout("added tau-post to "+w+": "+vertices.get(w).getPost());
+					counter.countDown();
+				}
+			});
 		}
 	}
-	comm.addToToVisit(graph.pre(start));
-	comm.addToVisited(graph.pre(start));
-	//TODO remove
-	System.out.println("starting workers");
-	for(int i = 0; i<workercount; i++){
-		workers[i] = new Worker(comm, target, !FORWARD);
-		workers[i].start();
+	try{
+		counter.await();
 	}
+	catch(InterruptedException e){
+		System.err.println(e.getStackTrace());
+	}
+	Communicator comm = new Communicator(threads);
 	//TODO remove
-	System.out.println("main now sleeping");
+	sysout("proliferating forward");
+	for(Vertex v : graph.getVertices()){
+		Set<Vertex>preTau = new HashSet<>();
+		for(LabeledEdge trans : graph.getEdgesWithEnd(v)){
+			if(trans.getLabel().equals(Action.TAU))
+				preTau.add(trans.getStart());
+		}
+		synchronized(threads){
+			threads.execute(new Proliferator(v, preTau, threads, comm, true));
+		}
+	}
 	comm.waitForDone();
-	for(int i = 0; i < workercount; i++){
-		workers[i].interrupt();
-	}
 	//TODO remove
-	System.out.println("now done");
-	return comm.wasFound();
+	sysout("proliferating backwards");
+	for(Vertex v: graph.getVertices()){/*
+		Set<Vertex> postVert = vertices.get(v).getPost();
+		vertices.get(v).clearPost();*/
+		final Vertex w = v;
+		final Communicator fcomm = comm;
+		synchronized(threads){
+			threads.execute(new Runnable(){
+				public void run(){
+					fcomm.checkIn();
+					for(Vertex u : vertices.get(w).getPost()){
+						vertices.get(u).addPre(vertices.get(w).getPre());
+					}
+					fcomm.checkOut();
+				}
+			});
+		}
+	}
 }
 
-private class Worker extends Thread {
-	
-	private Communicator comm;
-	private final Vertex target;
-	private final boolean forward;
-	
-	public Worker(Communicator comm, Vertex target, boolean forward){
-		this.comm = comm;
-		this.target = target;
-		this.forward = forward;
-	}
+public Set<Vertex> getPreWithTau(Vertex vertex){
+	return this.vertices.get(vertex).getPre();
+}
 
-	@Override
-	public void run() {
-		//TODO remove
-		System.out.println("worker initialized");
-		while(comm.workToDo()){
-			//TODO remove
-			System.out.println("working");
-			comm.checkIn();
-			Vertex v = comm.getVertexToVisit();
-			if(v != null){
-				if(reachableWith(v, target, Action.TAU))
-					comm.found();
-				else {
-					for(Vertex check : getPrePost(v)){
-						if(!comm.wasVisited(check) && reachableWith(v, check, Action.TAU)){
-								comm.addToToVisit(check);
-								comm.addToVisited(check);
-						}
+public Set<Vertex> getPostWithTau(Vertex vertex){
+	return this.vertices.get(vertex).getPost();
+}
+
+private class Proliferator implements Runnable{
+	private Vertex vert;
+	private Set<Vertex> verticesToAdd;
+	private ThreadPoolExecutor threads;
+	private Communicator comm;
+	private final boolean pre;
+	public Proliferator(Vertex v, Set<Vertex> verticesToAdd,
+			ThreadPoolExecutor threads, Communicator comm, boolean pre){
+		this.vert = v;
+		this.verticesToAdd = verticesToAdd;
+		this.threads = threads;
+		this.comm = comm;
+		this.pre = pre;
+	}
+	public void run(){
+		comm.checkIn();
+		if(pre){
+			if(vertices.get(vert).addPre(verticesToAdd)){
+				//TODO remove
+				sysout("proliferating pre of "+vert+": "+verticesToAdd);
+				for(Vertex v : vertices.get(vert).getPost()){
+					synchronized(threads){
+						threads.execute(new Proliferator(v, verticesToAdd, threads, comm, pre));
 					}
 				}
 			}
-			comm.checkOut();
 		}
-		//TODO remove
-		System.out.println("worker done");
-	}
-	
-	private boolean reachableWith(Vertex start, Vertex end, Action path){
-		if(forward)
-			return graph.reachableWith(start, end, path);
-		else {
-			if(graph.pre(start).contains(end)){
-				Set<LabeledEdge> edges = graph.getEdges();
-				for(LabeledEdge trans : edges){
-					if(trans.getLabel().equals(path)
-							&& trans.getStart().equals(end) && trans.getEnd().equals(start))
-						return true;
+		else{
+			if(vertices.get(vert).addPost(verticesToAdd)){
+				//TODO remove
+				sysout("proliferating post of "+vert+": "+verticesToAdd);
+				for(Vertex v : vertices.get(vert).getPre()){
+					synchronized(threads){
+						threads.execute(new Proliferator(v, verticesToAdd, threads, comm, pre));
+					}
 				}
 			}
-			return false;
 		}
-	}
-	private Set<Vertex> getPrePost(Vertex start){
-		if(forward)
-			return graph.post(start);
-		else
-			return graph.pre(start);
+		comm.checkOut();
 	}
 }
+
+public synchronized void sysout(String input){
+	System.out.println(input);
+}
+
+private class VertexWithPrePost {
+	private Vertex vert;
+	private Set<Vertex> preTau;
+	private Set<Vertex> postTau;
+	
+	public VertexWithPrePost(Vertex vert){
+		this.vert = vert;
+		this.preTau = new HashSet<>();
+		this.postTau = new HashSet<>();
+	}
+	
+	synchronized Set<Vertex> getPre(){
+		return preTau;
+	}
+	
+	synchronized Set<Vertex> getPost(){
+		return postTau;
+	}
+	
+	/**
+	 * WARNING: USE WITH LOTS OF CARE
+	 */
+	synchronized void clearPost(){
+		postTau.clear();
+	}
+	
+	synchronized boolean addPre(Set<Vertex> pre){
+		return preTau.addAll(pre);
+	}
+	
+	synchronized boolean addPre(Vertex pre){
+		return preTau.add(pre);
+	}
+	
+	synchronized boolean addPost(Set<Vertex> post){
+		return postTau.addAll(post);
+	}
+	
+	synchronized boolean addPost(Vertex post){
+		return postTau.add(post);
+	}
+}
+
 /** 
  * Handles the termination conditions of the graph search and wraps the lists the workers need
  * @author Thomas
  *
  */
+
 private class Communicator {
-	private List<Vertex> toVisit;
-	private Set<Vertex> visited;
 	private Semaphore status;
-	private boolean found = false;
+	private ThreadPoolExecutor threads;
 	
-	public Communicator(){
-		toVisit = new LinkedList<Vertex>();
-		visited = new HashSet<Vertex>();
+	public Communicator(ThreadPoolExecutor threads){
 		status = new Semaphore(workercount);
-	}
-	
-	synchronized public void addToToVisit(Collection<Vertex> vertices){
-		for(Vertex v : vertices){
-			if(!toVisit.contains(v))
-				toVisit.add(v);
-		}
-		notifyAll();
-	}
-	
-	synchronized public void addToToVisit(Vertex vertex){
-		toVisit.add(vertex);
-		notifyAll();
-	}
-	
-	synchronized public Vertex getVertexToVisit(){
-		if(!toVisit.isEmpty()){
-			Vertex v = toVisit.get(0);
-			toVisit.remove(0);
-			return v;
-		}
-		else
-			return null;
-	}
-	
-	synchronized public boolean wasVisited(Vertex v){
-		return visited.contains(v);
-	}
-	
-	synchronized public void addToVisited(Collection<Vertex> vertices){
-		visited.addAll(vertices);
-	}
-	
-	synchronized public void addToVisited(Vertex vertex){
-		visited.add(vertex);
+		this.threads = threads;
 	}
 	
 	synchronized public void checkIn(){
@@ -230,62 +230,18 @@ private class Communicator {
 		notifyAll();
 	}
 	
-	synchronized public void found() {
-		found = true;
-	}
-	
 	/**
 	 * Waits till all the workers are done or something was found.
 	 */
 	synchronized public void waitForDone(){
-		//TODO fucked up condition for termination not working
-//		if(found){
-//			notifyAll();
-//			return;
-//		}
-//		else{
-			while(!((toVisit.size() == 0) && (status.availablePermits() == workercount)) && !found && !Thread.interrupted()){
-				notifyAll();
-				try{
-					wait();
-				}
-				catch (InterruptedException e){
-					break;
-				}
+		while(!(status.availablePermits() == workercount && threads.getQueue().peek() == null)){
+			try{
+				wait();
 			}
-			notifyAll();
-//		}
-	}
-	
-	/**
-	 * Checks if the worker still has to do something.
-	 * @return False if interrupted, something was found, or no worker is working anymore and no nodes are to be visited, true otherwise 
-	 */
-	synchronized public boolean workToDo(){
-		if(Thread.interrupted())
-			return false;
-		if(toVisit.size() != 0)
-			return !found;
-		while(toVisit.size() == 0){
-			if(status.availablePermits() == workercount){
-				notifyAll();
-				return false;
-			}
-			else{
-				notifyAll();
-				try{
-					wait();
-				}
-				catch (InterruptedException e){
-					return false;
-				}
+			catch(InterruptedException e){
+				System.err.println(e.getStackTrace());
 			}
 		}
-		return true;
-	}
-	
-	synchronized public boolean wasFound(){
-		return found;
 	}
 	
 }
