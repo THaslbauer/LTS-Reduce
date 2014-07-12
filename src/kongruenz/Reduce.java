@@ -9,17 +9,19 @@ import kongruenz.util.LTSReader;
 
 public class Reduce {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 
 		ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
 		LTSReader Reader = new LTSReader(args);
-		Partition partition0 = new Partition(Reader.generateLTSfromJSON());
-		ReduceTask reduce0 = new ReduceTask(partition0);
+		Partition partition = new Partition(Reader.generateLTSfromJSON());
+		ReduceTask reduce0 = new ReduceTask(partition, partition.getLTS().getModVertices() );
 		
-		Partition reducedPartition = pool.invoke(reduce0);
+		pool.invoke(reduce0);
 		
-		LTS reducedLTS = reducedPartition.generateLTSfromPartition();
-		Main.openInBrowserDemo(reducedLTS.ToJson());
+		
+		System.out.println(partition.toString());
+		//LTS reducedLTS = partition.generateLTSfromPartition();
+		//Main.openInBrowserDemo(reducedLTS.ToJson());
 		//TODO: finish the main method
 	}
 

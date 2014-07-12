@@ -33,7 +33,11 @@ public class LTSReader {
 		if (output != null)
 			return output;
 
-		if (!input[0].equals("-i") || input.length < 1) {
+		if(input.length < 1){
+			
+			throw new IllegalArgumentException("Not an LTS");
+		}
+		else if ( !input[0].equals("-i")) {
 
 			throw new IllegalArgumentException("Not an LTS");
 		}
