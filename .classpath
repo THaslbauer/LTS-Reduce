@@ -4,11 +4,7 @@
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-<<<<<<< HEAD
-	<classpathentry kind="lib" path="/Projekt2014/javax.json-1.0.4.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Projekt2014"/>
-=======
 	<classpathentry kind="lib" path="javax.json-1.0.4.jar"/>
->>>>>>> 7c9417354ee4cb371505d3382ae3c68c3190e830
 	<classpathentry kind="output" path="bin"/>
 </classpath>
