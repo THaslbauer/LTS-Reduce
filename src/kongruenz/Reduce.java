@@ -2,7 +2,7 @@ package kongruenz;
 
 import java.util.concurrent.ForkJoinPool;
 
-import com.pseuco.project.Main;
+import kongruenz.util.Main;
 
 import kongruenz.util.LTSReader;
 
