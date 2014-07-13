@@ -19,6 +19,7 @@ public class ReduceTask extends RecursiveAction {
 
 		this.partition = p;
 		this.block = block;
+
 	}
 
 	@Override
@@ -35,8 +36,9 @@ public class ReduceTask extends RecursiveAction {
 				Set<Vertex> pre_states = new HashSet<Vertex>();
 
 				for (Vertex state : test_block) {
-					//System.out.println(block.toString());
-					pre_states.addAll(partition.getLTS().weakPre(state, action));
+
+					pre_states
+							.addAll(partition.getLTS().weakPre(state, action));
 
 				}
 
@@ -44,9 +46,8 @@ public class ReduceTask extends RecursiveAction {
 				block1.retainAll(block);
 				block2 = new HashSet<Vertex>(block);
 				block2.removeAll(pre_states);
-				
-				if (!(block1.isEmpty()
-						|| block2.isEmpty())) {
+
+				if (!(block1.isEmpty() || block2.isEmpty())) {
 
 					split = true;
 					break here;
@@ -64,9 +65,6 @@ public class ReduceTask extends RecursiveAction {
 
 			}
 
-			//System.out.println(block1.toString());
-			//System.out.println(block2.toString());
-			
 			ReduceTask reduce1 = new ReduceTask(partition, block1);
 			reduce1.fork();
 
@@ -78,9 +76,13 @@ public class ReduceTask extends RecursiveAction {
 		else {
 			System.out.println(block.toString());
 			partition.removeBlock_fromList(block);
-			
-		}
+			synchronized (partition) {
+				System.out.println("Notifying");
+				partition.notifyAll();
+			}
 
+		}
+		return;
 	}
 
 }

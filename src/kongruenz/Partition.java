@@ -39,7 +39,8 @@ public class Partition {
 	 * with "a" going from whatever block contains A to whatever block contains
 	 * B. Additionally, in the new LTS the vertices get their names from
 	 * numbers( 0,...,n) where "n" is the amount of blocks in the partition.
-	 * 
+	 * Only use this in conjunction with a Reduce task, as this method wont do anything unless
+	 * the toDo-list isEmpty;
 	 * @returns A new LTS
 	 * @author Jeremias
 	 * 
@@ -47,6 +48,16 @@ public class Partition {
 	 * */
 	synchronized public LTS generateLTSfromPartition() {
 
+		
+		while(!isDone()){
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
 		Map<Set<Vertex>, Vertex> set_vertex_map = new HashMap<Set<Vertex>, Vertex>();
 		Set<Vertex> new_states = new HashSet<Vertex>();
 
@@ -67,7 +78,8 @@ public class Partition {
 			for (Set<Vertex> block : P) {
 
 				if (block.contains(vertex)) {
-
+					
+					vertex_set_map.put(vertex,block);
 					assert (vertex_set_map.put(vertex, block) == null);
 				}
 			}
@@ -197,6 +209,15 @@ public class Partition {
 
 	
 	synchronized public String toString(){
+		
+		while(!isDone()){
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		
 		return P.toString();
 	}
