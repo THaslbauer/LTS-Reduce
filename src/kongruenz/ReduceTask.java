@@ -31,6 +31,7 @@ public class ReduceTask extends RecursiveAction {
 		Set<Vertex> block2 = new HashSet<Vertex>();
 		
 		here: for (Action action : partition.getLTS().getActions()) {
+			if(action != Action.TAU)
 
 			for (Set<Vertex> test_block : partition.getBlocks()) {
 

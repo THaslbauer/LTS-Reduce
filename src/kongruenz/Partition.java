@@ -61,6 +61,7 @@ public class Partition {
 		Map<Set<Vertex>, Vertex> set_vertex_map = new HashMap<Set<Vertex>, Vertex>();
 		Set<Vertex> new_states = new HashSet<Vertex>();
 
+		//initialize the new states
 		int i = 0;
 		for (Set<Vertex> block : P) {
 
@@ -79,7 +80,7 @@ public class Partition {
 
 				if (block.contains(vertex)) {
 					
-					vertex_set_map.put(vertex,block);
+					//TODO: vertex_set_map.put(vertex,block);
 					assert (vertex_set_map.put(vertex, block) == null);
 				}
 			}
