@@ -3,7 +3,6 @@ package kongruenz;
 import java.util.concurrent.ForkJoinPool;
 
 import kongruenz.util.Main;
-
 import kongruenz.util.LTSReader;
 
 
@@ -32,7 +31,6 @@ public class Reduce {
 	 	
 	 			
 		Main.openInBrowserDemo(reducedLTS.ToJson());
-		System.exit(0);
 		//TODO: finish the main method
 	}
 

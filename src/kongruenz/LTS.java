@@ -11,7 +11,6 @@ import javax.json.JsonObjectBuilder;
 import kongruenz.objects.Action;
 import kongruenz.objects.Vertex;
 import kongruenz.objects.LabeledEdge;
-import kongruenz.util.GraphSearch;
 
 /** 
  * Basic implementation of a LTS, extends a Graph.

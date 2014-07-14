@@ -1,17 +1,12 @@
 package kongruenz.util;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.lang.Runtime;
@@ -101,6 +96,7 @@ public GraphSearch(final Graph graph){
 			});
 		}
 	}
+	threads.shutdown();
 }
 
 public Set<Vertex> getPreWithTau(Vertex vertex){

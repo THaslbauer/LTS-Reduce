@@ -8,8 +8,6 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import com.pseuco.project.share.PseuCoShare;
-
 public class Main {
 
 	/**
