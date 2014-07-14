@@ -153,7 +153,7 @@ private class Proliferator implements Runnable{
 }
 
 public synchronized void sysout(String input){
-	System.out.println(input);
+	System.err.println(input);
 }
 
 private class VertexWithPrePost {
@@ -215,21 +215,25 @@ private class Communicator {
 	}
 	
 	synchronized public void moreWorkToDo(){
+		//TODO remove
 		sysout("more work");
 		try{
 			status.release();
 		}
 		catch(Exception e){}
+		//TODO remove
 		sysout("work is now: "+status.availablePermits());
 	}
 	
 	synchronized public void lessWorkToDo(){
+		//TODO remove
 		sysout("less work");
 		try{
 			status.acquire();
 		}
 		catch(Exception e){}
 		notifyAll();
+		//TODO remove
 		sysout("work is now: "+status.availablePermits());
 	}
 	
