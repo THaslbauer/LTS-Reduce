@@ -72,6 +72,7 @@ public GraphSearch(final Graph graph){
 			if(trans.getLabel().equals(Action.TAU))
 				preTau.add(trans.getStart());
 		}
+		comm.moreWorkToDo();
 		synchronized(threads){
 			threads.execute(new Proliferator(v, preTau, threads, comm, true));
 		}
@@ -87,15 +88,16 @@ public GraphSearch(final Graph graph){
 		synchronized(threads){
 			threads.execute(new Runnable(){
 				public void run(){
-					fcomm.checkIn();
+					fcomm.moreWorkToDo();
 					for(Vertex u : vertices.get(w).getPost()){
 						vertices.get(u).addPre(vertices.get(w).getPre());
 					}
-					fcomm.checkOut();
+					fcomm.lessWorkToDo();
 				}
 			});
 		}
 	}
+	comm.waitForDone();
 	threads.shutdown();
 }
 
@@ -122,12 +124,12 @@ private class Proliferator implements Runnable{
 		this.pre = pre;
 	}
 	public void run(){
-		comm.checkIn();
 		if(pre){
 			if(vertices.get(vert).addPre(verticesToAdd)){
 				//TODO remove
 				sysout("proliferating pre of "+vert+": "+verticesToAdd);
 				for(Vertex v : vertices.get(vert).getPost()){
+					comm.moreWorkToDo();
 					synchronized(threads){
 						threads.execute(new Proliferator(v, verticesToAdd, threads, comm, pre));
 					}
@@ -139,13 +141,14 @@ private class Proliferator implements Runnable{
 				//TODO remove
 				sysout("proliferating post of "+vert+": "+verticesToAdd);
 				for(Vertex v : vertices.get(vert).getPre()){
+					comm.moreWorkToDo();
 					synchronized(threads){
 						threads.execute(new Proliferator(v, verticesToAdd, threads, comm, pre));
 					}
 				}
 			}
 		}
-		comm.checkOut();
+		comm.lessWorkToDo();
 	}
 }
 
@@ -207,30 +210,34 @@ private class Communicator {
 	private ThreadPoolExecutor threads;
 	
 	public Communicator(ThreadPoolExecutor threads){
-		status = new Semaphore(workercount);
+		status = new Semaphore(0);
 		this.threads = threads;
 	}
 	
-	synchronized public void checkIn(){
-		try{
-		status.acquire();
-		}
-		catch(Exception e){}
-	}
-	
-	synchronized public void checkOut(){
+	synchronized public void moreWorkToDo(){
+		sysout("more work");
 		try{
 			status.release();
 		}
 		catch(Exception e){}
+		sysout("work is now: "+status.availablePermits());
+	}
+	
+	synchronized public void lessWorkToDo(){
+		sysout("less work");
+		try{
+			status.acquire();
+		}
+		catch(Exception e){}
 		notifyAll();
+		sysout("work is now: "+status.availablePermits());
 	}
 	
 	/**
 	 * Waits till all the workers are done or something was found.
 	 */
 	synchronized public void waitForDone(){
-		while(!(status.availablePermits() == workercount && threads.getQueue().peek() == null)){
+		while(!(status.availablePermits() == 0 && threads.getQueue().peek() == null)){
 			try{
 				wait();
 			}

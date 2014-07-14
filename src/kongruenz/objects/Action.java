@@ -8,7 +8,7 @@ package kongruenz.objects;
  */
 public class Action {
 	final private String action;
-	static final public Action TAU = new Action("tau");
+	static final public Action TAU = new Action("τ");
 	
 	/**
 	 * Constructor, wants a name.
