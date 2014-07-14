@@ -171,7 +171,7 @@ public class Partition {
 	 *            block to add
 	 * 
 	 * */
-	synchronized private void putBlock(Set<Vertex> block)
+	synchronized public void putBlock(Set<Vertex> block)
 			throws InterruptedException {
 
 		while (!(toDo_list.size() < Integer.MAX_VALUE)) {
