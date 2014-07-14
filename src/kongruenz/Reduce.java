@@ -26,6 +26,7 @@ public class Reduce {
 		System.out.println(pool.getActiveThreadCount());
 	 	System.out.println(pool.isTerminated());
 	 	System.out.println(pool.isShutdown());
+	 	System.out.println("\u03C4");
 	 	
 	 	
 	 	

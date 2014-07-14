@@ -3,6 +3,7 @@ package kongruenz;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.RecursiveAction;
+
 import kongruenz.objects.Action;
 import kongruenz.objects.Vertex;
 
@@ -28,8 +29,9 @@ public class ReduceTask extends RecursiveAction {
 		boolean split = false;
 		Set<Vertex> block1 = new HashSet<Vertex>();
 		Set<Vertex> block2 = new HashSet<Vertex>();
-
+		
 		here: for (Action action : partition.getLTS().getActions()) {
+			if(action != Action.TAU)
 
 			for (Set<Vertex> test_block : partition.getBlocks()) {
 
@@ -64,6 +66,21 @@ public class ReduceTask extends RecursiveAction {
 			} catch (InterruptedException e) {
 
 			}
+			
+			Set<Set<Vertex>> preBlocks = getPreBlocksOfBlock(block);
+			
+			for (Set<Vertex> block : preBlocks){
+				
+				try {
+					partition.putBlock(block);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				ReduceTask reduce0 = new ReduceTask(partition, block);
+				reduce0.fork();
+				
+			}
 
 			ReduceTask reduce1 = new ReduceTask(partition, block1);
 			reduce1.fork();
@@ -83,6 +100,41 @@ public class ReduceTask extends RecursiveAction {
 
 		}
 		return;
+	}
+
+	
+	
+	private Set<Set<Vertex>> getPreBlocksOfBlock(Set<Vertex> block) {
+
+		Set<Vertex> presOfBlock = new HashSet<Vertex>(); //Pres of the argument block
+		Set<Set<Vertex>> preBlocks = new HashSet<Set<Vertex>>();//Set of blocks that need to be checked
+
+		//get the pres of block
+		
+		for (Action action : partition.getLTS().getActions()) {
+
+			for (Vertex vertex : block) {
+
+				presOfBlock.addAll(partition.getLTS().weakPre(vertex, action));
+			}
+		}
+
+		//get the preBlocks to be returned
+		
+		for (Set<Vertex> pBlock : partition.getBlocks()) {
+			
+			for (Vertex vertex : presOfBlock){
+				
+				if (pBlock.contains(vertex)){
+					
+					preBlocks.add(pBlock);
+				}
+			}
+
+		}
+		
+		return preBlocks;
+
 	}
 
 }
