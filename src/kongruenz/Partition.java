@@ -57,47 +57,7 @@ public class Partition {
 				e.printStackTrace();
 			}
 		}
-		
-		Map<Set<Vertex>, Vertex> set_vertex_map = new HashMap<Set<Vertex>, Vertex>();
-		Set<Vertex> new_states = new HashSet<Vertex>();
-
-		int i = 0;
-		for (Set<Vertex> block : P) {
-
-			Vertex j = new Vertex(Integer.toString(i));
-			set_vertex_map.put(block, j);
-			new_states.add(j);
-
-			i++;
-		}
-
-		Map<Vertex, Set<Vertex>> vertex_set_map = new HashMap<Vertex, Set<Vertex>>();
-
-		for (Vertex vertex : lts.getVertices()) {
-
-			for (Set<Vertex> block : P) {
-
-				if (block.contains(vertex)) {
-					
-					vertex_set_map.put(vertex,block);
-					assert (vertex_set_map.put(vertex, block) == null);
-				}
-			}
-		}
-
-		Set<LabeledEdge> newEdges = new HashSet<LabeledEdge>();
-
-		for (LabeledEdge edge : lts.getEdges()) {
-			if (edge.getLabel() != Action.TAU
-					|| edge.getStart() == lts.getStart())
-				newEdges.add(new LabeledEdge(set_vertex_map.get(vertex_set_map
-						.get(edge.getStart())), set_vertex_map
-						.get(vertex_set_map.get(edge.getEnd())), edge
-						.getLabel()));
-		}
-
-		return new LTS(new_states, newEdges, set_vertex_map.get(vertex_set_map
-				.get(lts.getStart())));
+	throw new UnsupportedOperationException();
 
 	}
 
