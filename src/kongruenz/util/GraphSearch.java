@@ -15,6 +15,7 @@ import kongruenz.Graph;
 import kongruenz.objects.Action;
 import kongruenz.objects.LabeledEdge;
 import kongruenz.objects.Vertex;
+import kongruenz.util.Communicator;
 
 
 /**
@@ -80,9 +81,7 @@ public GraphSearch(final Graph graph){
 	comm.waitForDone();
 	//TODO remove
 	sysout("proliferating backwards");
-	for(Vertex v: graph.getVertices()){/*
-		Set<Vertex> postVert = vertices.get(v).getPost();
-		vertices.get(v).clearPost();*/
+	for(Vertex v: graph.getVertices()){
 		final Vertex w = v;
 		final Communicator fcomm = comm;
 		synchronized(threads){
@@ -197,55 +196,5 @@ private class VertexWithPrePost {
 	synchronized boolean addPost(Vertex post){
 		return postTau.add(post);
 	}
-}
-
-/** 
- * Handles the termination conditions of the graph search and wraps the lists the workers need
- * @author Thomas
- *
- */
-
-private class Communicator {
-	private Semaphore status;
-	private ThreadPoolExecutor threads;
-	
-	public Communicator(ThreadPoolExecutor threads){
-		status = new Semaphore(0);
-		this.threads = threads;
-	}
-	
-	synchronized public void moreWorkToDo(){
-		sysout("more work");
-		try{
-			status.release();
-		}
-		catch(Exception e){}
-		sysout("work is now: "+status.availablePermits());
-	}
-	
-	synchronized public void lessWorkToDo(){
-		sysout("less work");
-		try{
-			status.acquire();
-		}
-		catch(Exception e){}
-		notifyAll();
-		sysout("work is now: "+status.availablePermits());
-	}
-	
-	/**
-	 * Waits till all the workers are done or something was found.
-	 */
-	synchronized public void waitForDone(){
-		while(!(status.availablePermits() == 0 && threads.getQueue().peek() == null)){
-			try{
-				wait();
-			}
-			catch(InterruptedException e){
-				System.err.println(e.getStackTrace());
-			}
-		}
-	}
-	
 }
 }

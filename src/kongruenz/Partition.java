@@ -11,6 +11,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import kongruenz.objects.Action;
 import kongruenz.objects.LabeledEdge;
 import kongruenz.objects.Vertex;
+import kongruenz.util.Minimizer;
 
 public class Partition {
 
@@ -47,18 +48,17 @@ public class Partition {
 	 * 
 	 * */
 	synchronized public LTS generateLTSfromPartition() {
-
-		
 		while(!isDone()){
 			try {
 				wait();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println(e.getStackTrace());
+				return null;
 			}
 		}
-	throw new UnsupportedOperationException();
-
+		Minimizer minimizer = new Minimizer();
+		return minimizer.minimize(lts, this);
 	}
 
 	/**
