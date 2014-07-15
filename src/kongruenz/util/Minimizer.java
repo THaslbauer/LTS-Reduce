@@ -66,6 +66,9 @@ public class Minimizer {
 		System.err.println("now collapsing");
 		threads.execute(new LTSGenerator(threads, comm, graphMon, toMinimize.getStart(), toMinimize, stateName));
 		comm.waitForDone();
+		//TODO remove
+		System.err.println("edges are:\n"+graphMon.getEdges());
+		System.err.println("vertices are:\n"+graphMon.getVertices());
 		return new LTS(graphMon.getVertices(), graphMon.getEdges(), new Vertex(stateName.get(toMinimize.getStart())));
 	}
 	
@@ -141,13 +144,17 @@ public class Minimizer {
 		 */
 		public void run(){
 			String startName = namingKey.get(start);
-			System.out.println(start+" mapped to "+startName);
+			//TODO remove
+			System.err.println(start+" mapped to "+startName);
 			for(LabeledEdge trans : lts.getEdgesWithStart(start)){
 				Vertex from = new Vertex(startName);
 				Vertex to = new Vertex(namingKey.get(trans.getEnd()));
 				if(!(from.equals(to) && !this.start.equals(lts.getStart())
-						&& trans.getLabel().equals(Action.TAU)))
+						&& trans.getLabel().equals(Action.TAU))){
+					//TODO remove
+					System.err.println("going from "+from+" to "+to+" with "+trans.getLabel());
 					graph.updateMonitor(new LabeledEdge(from, to, trans.getLabel()));
+				}
 				if(!graph.visited(trans.getEnd())){
 					comm.moreWorkToDo();
 					threads.execute(new LTSGenerator(threads, comm, graph, trans.getEnd(), lts, namingKey));
@@ -181,8 +188,12 @@ public class Minimizer {
 		 * @return True if something was updated
 		 */
 		public boolean updateMonitor(LabeledEdge edge){
-			return vertices.add(edge.getStart()) || vertices.add(edge.getEnd()) ||
-					edges.add(edge);
+			//TODO remove
+			System.err.println("adding edge "+edge);
+			boolean a =  vertices.add(edge.getStart());
+			boolean b = vertices.add(edge.getEnd());
+			boolean c = edges.add(edge);
+			return a||b||c;
 		}
 		
 		/**
