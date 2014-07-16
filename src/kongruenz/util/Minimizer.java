@@ -72,6 +72,15 @@ public class Minimizer {
 		return new LTS(graphMon.getVertices(), graphMon.getEdges(), new Vertex(stateName.get(toMinimize.getStart())));
 	}
 	
+	private LTS reduceEdges(LTS lts){
+		GraphSearch searcher = new GraphSearch(lts);
+		CountDownLatch counter = new CountDownLatch(lts.getActions().size());
+		for(Action a : lts.getActions()){
+			
+		}
+		throw new UnsupportedOperationException();
+	}
+	
 	public void shutdown(){
 		threads.shutdownNow();
 		try{
@@ -212,5 +221,20 @@ public class Minimizer {
 		public Set<Vertex> getVertices(){
 			return Collections.unmodifiableSet(vertices);
 		}
+	}
+	
+	private class EdgeCombiner implements Runnable{
+		private GraphSearch searcher;
+		private LTS lts;
+		private CountDownLatch counter;
+		private Action a;
+		
+		public EdgeCombiner(GraphSearch searcher, LTS lts, CountDownLatch counter, Action a){
+			this.searcher = searcher;
+			this.lts = lts;
+			this.counter = counter;
+			this.a = a;
+		}
+		
 	}
 }
