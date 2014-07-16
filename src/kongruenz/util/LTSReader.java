@@ -17,7 +17,7 @@ import kongruenz.objects.Vertex;
 
 public class LTSReader {
 
-	private String[] input;
+	private String input;
 	private LTS output;
 
 	/**
@@ -30,23 +30,10 @@ public class LTSReader {
 	 * */
 	public LTS generateLTSfromJSON() {
 
-		if (output != null)
-			return output;
-
-		if(input.length < 1){
-			
-			throw new IllegalArgumentException("Not an LTS");
-		}
-		else if ( !input[0].equals("-i") && !input[0].equals("-d")) {
-
-			throw new IllegalArgumentException("Not an LTS");
-		}
-		
-		// -----------------------------------------------------------------//
+			// -----------------------------------------------------------------//
 		// --------------Variables used in this method----------------------//
 		
-		System.out.print("Enter the LTS here:");
-		String LTSText = getString();
+		String LTSText = input;
 		Set<Vertex> allstates = new HashSet<Vertex>();
 		Set<LabeledEdge> transitions = new HashSet<LabeledEdge>();
 
@@ -116,11 +103,11 @@ public class LTSReader {
 	// -----------Getters, Setters and Constructor -----------------------//
 	// -------------------------------------------------------------------//
 
-	public String[] getInput() {
+	public String getInput() {
 		return input;
 	}
 
-	public void setInput(String[] input) {
+	public void setInput(String input) {
 		this.input = input;
 	}
 
@@ -128,7 +115,7 @@ public class LTSReader {
 		this.output = output;
 	}
 
-	public LTSReader(String[] input) {
+	public LTSReader(String input) {
 
 		this.input = input;
 		output = null;

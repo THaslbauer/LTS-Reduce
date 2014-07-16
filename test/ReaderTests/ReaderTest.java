@@ -11,7 +11,7 @@ public class ReaderTest {
 
 	public static void main(String[] args) {
 		
-		LTSReader Reader = new LTSReader(args);
+		LTSReader Reader = new LTSReader(LTSReader.getString());
 		LTS lts = Reader.generateLTSfromJSON();
 		JsonObject LTS = lts.ToJson();
 //		Main.openInBrowserDemo(LTS);

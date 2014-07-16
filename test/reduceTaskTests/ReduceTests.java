@@ -18,8 +18,7 @@ public class ReduceTests {
 	@BeforeClass
 	public static void setUpBeforeClass(){
 		
-		String[] args = {"-i"};
-		LTSReader reader = new LTSReader(args);
+		LTSReader reader = new LTSReader(LTSReader.getString());
 		testLTS = reader.generateLTSfromJSON();
 		reducer = new ReduceTask(new Partition(testLTS), testLTS.getModVertices());
 		
