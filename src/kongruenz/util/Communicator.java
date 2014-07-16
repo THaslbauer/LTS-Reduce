@@ -19,19 +19,19 @@ private int workCount;
 	
 	synchronized public void moreWorkToDo(){
 		//TODO remove
-		System.out.println("more work");
+		System.err.println("more work");
 		workCount++;
 		//TODO remove
-		System.out.println("work is now: "+workCount);
+		System.err.println("work is now: "+workCount);
 	}
 	
 	synchronized public void lessWorkToDo(){
 		//TODO remove
-		System.out.println("less work");
+		System.err.println("less work");
 		workCount--;
 		notifyAll();
 		//TODO remove
-		System.out.println("work is now: "+workCount);
+		System.err.println("work is now: "+workCount);
 	}
 	
 	/**

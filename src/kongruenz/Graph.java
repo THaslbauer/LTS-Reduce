@@ -50,7 +50,7 @@ public abstract class Graph {
 		}
 	}
 	
-	public void initSearch(){
+	synchronized public void initSearch(){
 		if(searcher == null)
 			searcher = new GraphSearch(this);
 	}

@@ -58,7 +58,9 @@ public class Partition {
 			}
 		}
 		Minimizer minimizer = new Minimizer();
-		return minimizer.minimize(lts, this);
+		LTS returnLTS = minimizer.minimize(lts, this);
+		minimizer.shutdown();
+		return returnLTS;
 	}
 
 	/**

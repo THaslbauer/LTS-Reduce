@@ -43,6 +43,8 @@ public class Minimizer {
 	 * @return
 	 */
 	private LTS collapse(LTS toMinimize, Partition p){
+		//TODO remove
+		System.err.println("collapsing graph");
 		CountDownLatch counter = new CountDownLatch(p.getBlocks().size());
 		int vertexNumber = 0;
 		Map<Vertex, String> stateName = new ConcurrentHashMap<>(toMinimize.getVertices().size(), 0.75f, workercount);
@@ -78,8 +80,8 @@ public class Minimizer {
 	}
 	
 	private LTS reduceEdges(LTS lts){
-		GraphSearch searcher = new GraphSearch(lts);
-		Communicator comm = new Communicator(threads);
+		//TODO remove
+		System.err.println("reducing graph");
 		Map<Action, Future<Set<LabeledEdge>>> edgesByAction = new HashMap<>();
 		for(Action a : lts.getActions()){
 			edgesByAction.put(a, threads.submit(new EdgeCombiner(lts, a, lts.getEdgesWithAction(a))));
@@ -134,7 +136,8 @@ public class Minimizer {
 		
 		public void run(){
 			for(Vertex v : vertices){
-				System.out.println("mapping "+v+" to "+name);
+				//TODO remove
+				System.err.println("mapping "+v+" to "+name);
 				boolean hopeNotThis = map.put(v, name) == null;
 				assert(hopeNotThis);
 				hopeNotThis = !hopeNotThis;
@@ -263,6 +266,8 @@ public class Minimizer {
 		}
 		
 		public Set<LabeledEdge> call(){
+			//TODO remove
+			System.err.println("combining edges with "+a);
 			int counter = 0;
 			while(counter < EdgesToCombine.size()){
 				LabeledEdge trans = EdgesToCombine.get(counter);
