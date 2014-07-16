@@ -141,6 +141,12 @@ public class LTS extends Graph{
 		return result;
 	}
 	
+	@Override
+	public String toString(){
+		
+		return "[" + this.vertices.toString()  + ", " + this.edges.toString() + ", " + this.getStart().toString() + "]";
+	}
+	
 
 	@Override
 	public boolean equals(Object obj) {
