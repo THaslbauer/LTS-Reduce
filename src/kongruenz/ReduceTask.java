@@ -91,10 +91,10 @@ public class ReduceTask extends RecursiveAction {
 		}
 
 		else {
-			System.out.println(block.toString());
+			System.err.println(block.toString());
 			partition.removeBlock_fromList(block);
 			synchronized (partition) {
-				System.out.println("Notifying");
+				System.err.println("Notifying");
 				partition.notifyAll();
 			}
 

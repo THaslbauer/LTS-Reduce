@@ -18,20 +18,25 @@ public class Reduce {
 		pool.invoke(reduce0);
 		pool.shutdown();
 		
-		System.out.println(pool.getActiveThreadCount());
-		System.out.println(partition.toString());
+		System.err.println(pool.getActiveThreadCount());
+		System.err.println(partition.toString());
 		
 		LTS reducedLTS = partition.generateLTSfromPartition();
 		
-		System.out.println(pool.getActiveThreadCount());
-	 	System.out.println(pool.isTerminated());
-	 	System.out.println(pool.isShutdown());
-	 	System.out.println("\u03C4");
+		System.err.println(pool.getActiveThreadCount());
+	 	System.err.println(pool.isTerminated());
+	 	System.err.println(pool.isShutdown());
+	 	System.err.println("\u03C4");
 	 	
+	 	System.out.println(reducedLTS.toString());
 	 	
-	 	
-	 			
-		Main.openInBrowserDemo(reducedLTS.ToJson());
+	 	if (args.length == 1){
+	 		
+	 		if (args[0].equals("-d")){
+	 			Main.openInBrowserDemo(reducedLTS.ToJson());
+	 		}
+	 	}
+		
 		//TODO: finish the main method
 	}
 

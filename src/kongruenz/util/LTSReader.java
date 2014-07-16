@@ -37,7 +37,7 @@ public class LTSReader {
 			
 			throw new IllegalArgumentException("Not an LTS");
 		}
-		else if ( !input[0].equals("-i")) {
+		else if ( !input[0].equals("-i") && !input[0].equals("-d")) {
 
 			throw new IllegalArgumentException("Not an LTS");
 		}
