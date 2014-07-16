@@ -123,6 +123,12 @@ public class LTS extends Graph{
 	public Vertex getStart(){
 		return start;
 	}
+	
+	@Override
+	public Set<Action>getActions(){
+		act = super.getActions();
+		return act;
+	}
 
 	@Override
 	public int hashCode() {

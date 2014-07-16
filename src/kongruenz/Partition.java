@@ -11,6 +11,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import kongruenz.objects.Action;
 import kongruenz.objects.LabeledEdge;
 import kongruenz.objects.Vertex;
+import kongruenz.util.Minimizer;
 
 public class Partition {
 
@@ -47,59 +48,17 @@ public class Partition {
 	 * 
 	 * */
 	synchronized public LTS generateLTSfromPartition() {
-
-		
 		while(!isDone()){
 			try {
 				wait();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println(e.getStackTrace());
+				return null;
 			}
 		}
-		
-		Map<Set<Vertex>, Vertex> set_vertex_map = new HashMap<Set<Vertex>, Vertex>();
-		Set<Vertex> new_states = new HashSet<Vertex>();
-
-		//initialize the new states
-		int i = 0;
-		for (Set<Vertex> block : P) {
-
-			Vertex j = new Vertex(Integer.toString(i));
-			set_vertex_map.put(block, j);
-			new_states.add(j);
-
-			i++;
-		}
-
-		Map<Vertex, Set<Vertex>> vertex_set_map = new HashMap<Vertex, Set<Vertex>>();
-
-		for (Vertex vertex : lts.getVertices()) {
-
-			for (Set<Vertex> block : P) {
-
-				if (block.contains(vertex)) {
-					
-					//TODO: vertex_set_map.put(vertex,block);
-					assert (vertex_set_map.put(vertex, block) == null);
-				}
-			}
-		}
-
-		Set<LabeledEdge> newEdges = new HashSet<LabeledEdge>();
-
-		for (LabeledEdge edge : lts.getEdges()) {
-			if (edge.getLabel() != Action.TAU
-					|| edge.getStart() == lts.getStart())
-				newEdges.add(new LabeledEdge(set_vertex_map.get(vertex_set_map
-						.get(edge.getStart())), set_vertex_map
-						.get(vertex_set_map.get(edge.getEnd())), edge
-						.getLabel()));
-		}
-
-		return new LTS(new_states, newEdges, set_vertex_map.get(vertex_set_map
-				.get(lts.getStart())));
-
+		Minimizer minimizer = new Minimizer();
+		return minimizer.minimize(lts, this);
 	}
 
 	/**
