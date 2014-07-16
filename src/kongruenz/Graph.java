@@ -100,6 +100,11 @@ public abstract class Graph {
 		
 	}
 	
+	public Set<Vertex> getTauPost(Vertex v){
+		this.initSearch();
+		return searcher.getPostWithTau(v);
+	}
+	
 	
 	
 	//TODO: look into the methods using this if removing the start vertex itself causes problems

@@ -3,10 +3,15 @@ package kongruenz.util;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -28,7 +33,7 @@ public class Minimizer {
 	}
 	
 	public LTS minimize(LTS toMinimize, Partition p){
-		return this.collapse(toMinimize, p);
+		return this.reduceEdges(this.collapse(toMinimize, p));
 	}
 	
 	/**
@@ -74,11 +79,26 @@ public class Minimizer {
 	
 	private LTS reduceEdges(LTS lts){
 		GraphSearch searcher = new GraphSearch(lts);
-		CountDownLatch counter = new CountDownLatch(lts.getActions().size());
+		Communicator comm = new Communicator(threads);
+		Map<Action, Future<Set<LabeledEdge>>> edgesByAction = new HashMap<>();
 		for(Action a : lts.getActions()){
-			
+			edgesByAction.put(a, threads.submit(new EdgeCombiner(lts, a, lts.getEdgesWithAction(a))));
 		}
-		throw new UnsupportedOperationException();
+		Set<LabeledEdge> edgesForGraph = new HashSet<>();
+		for(Action a : edgesByAction.keySet()){
+			try{
+				edgesForGraph.addAll(edgesByAction.get(a).get());
+			}
+			catch(Exception e){
+				if(e instanceof InterruptedException)
+					return null;
+				else
+					System.err.println("Reduction of edges with label "+a+" failed with Exception "+e
+							+" and cause:\n"+e.getCause()+"\n"
+							+"Stacktrace is:\n"+e.getStackTrace());
+			}
+		}
+		return new LTS(lts.getVertices(), edgesForGraph, lts.getStart());
 	}
 	
 	public void shutdown(){
@@ -223,18 +243,50 @@ public class Minimizer {
 		}
 	}
 	
-	private class EdgeCombiner implements Runnable{
-		private GraphSearch searcher;
+	private class EdgeCombiner implements Callable<Set<LabeledEdge>>{
 		private LTS lts;
-		private CountDownLatch counter;
 		private Action a;
+		private List<LabeledEdge> EdgesToCombine;
 		
-		public EdgeCombiner(GraphSearch searcher, LTS lts, CountDownLatch counter, Action a){
-			this.searcher = searcher;
+		/**
+		 * Callable that gets a Set of LabeledEdges from an LTS and removes all redundant edges.
+		 * Doesn't modify any of its arguments.
+		 * @param lts The LTS to which the edges belong
+		 * @param a The label that all the edges to combine have in common
+		 * @param EdgesToCombine The edges for a specific label that need to be combined
+		 */
+		public EdgeCombiner(LTS lts, Action a,
+				Set<LabeledEdge> EdgesToCombine){
 			this.lts = lts;
-			this.counter = counter;
 			this.a = a;
+			this.EdgesToCombine = new LinkedList<LabeledEdge>(EdgesToCombine);
 		}
 		
+		public Set<LabeledEdge> call(){
+			int counter = 0;
+			while(counter < EdgesToCombine.size()){
+				LabeledEdge trans = EdgesToCombine.get(counter);
+				boolean removed = false;
+				for(Vertex post : lts.getTauPost(trans.getStart())){
+					if(!post.equals(trans.getStart())
+							&& tauPostReachable(post, trans.getEnd())){
+						removed = true;
+						EdgesToCombine.remove(counter);
+					}
+				}
+				if(!removed)
+					counter++;
+			}
+			return new HashSet<LabeledEdge>(EdgesToCombine);
+		}
+		
+		private boolean tauPostReachable(Vertex start, Vertex end){
+			for(LabeledEdge trans: this.EdgesToCombine){
+				if(trans.getStart().equals(start)
+						&& (trans.getEnd().equals(end) || lts.getTauPost(trans.getEnd()).contains(end)))
+					return true;
+			}
+			return false;
+		}
 	}
 }
