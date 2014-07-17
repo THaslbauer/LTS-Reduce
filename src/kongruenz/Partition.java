@@ -1,18 +1,27 @@
 package kongruenz;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import kongruenz.objects.Action;
-import kongruenz.objects.LabeledEdge;
 import kongruenz.objects.Vertex;
 import kongruenz.util.Minimizer;
 
+
+/**
+ * This class is used to represent a Set that, if in its final state, contains sets of Vertices that are congruent to all others in their respective set.
+ * It starts off as only one set of vertices, but using a ForkJoinPool and ReduceTask it can be iterated upon, further improving the Partition.
+ * Its fields are used as follows:
+ * 
+ * @P: The actual Set of sets of vertices.
+ * @lts: The LTS this Partition originally belonged to.
+ * @toDo_list: Methods such as generateLTSfromPartition() rely on the Partition being completely iterated upon, meaning every set contained therein only has Vertices that are congruent to each other.
+ * In order to make sure the methods wait for the Partition to be done, this toDo_list contains all blocks that still need to be looked at.
+ * 
+ * 
+ * */
 public class Partition {
 
 	private Set<Set<Vertex>> P;
@@ -40,10 +49,10 @@ public class Partition {
 	 * with "a" going from whatever block contains A to whatever block contains
 	 * B. Additionally, in the new LTS the vertices get their names from
 	 * numbers( 0,...,n) where "n" is the amount of blocks in the partition.
-	 * Only use this in conjunction with a Reduce task, as this method wont do anything unless
-	 * the toDo-list isEmpty;
+	 * Only use this in conjunction with a Reduce task, as this method wont do anything usefull unless
+	 * this Partition has been iterated upon to completion.
 	 * @returns A new LTS
-	 * @author Jeremias
+	 * @author Thomas & Jere
 	 * 
 	 * 
 	 * */
@@ -63,56 +72,15 @@ public class Partition {
 		return returnLTS;
 	}
 
-	/**
-	 * Generates a new Partition with the same LTS as this one, but with a new P
-	 * field
-	 * 
-	 * @param newP
-	 *            The set with which to replace everything in the old partition
-	 * @return The new partition
-	 * 
-	 * @author Jeremias
-	 * */
-	synchronized public Partition generateNewPartition(Set<Vertex> newP) {
-
-		Partition newPartition = new Partition(lts);
-
-		Set<Set<Vertex>> toBeUsed = new HashSet<Set<Vertex>>();
-		toBeUsed.add(newP);
-		newPartition.P = toBeUsed;
-		return newPartition;
-	}
-
 	synchronized public boolean isDone(){
 		
 		return toDo_list.isEmpty();
 	}
-	
-	
-	
-	
-	
-	
-	/**
-	 * This method forms the union of two partitions' P fields
-	 * 
-	 * @param partition
-	 *            The partition to be added to this one
-	 * 
-	 * @author Jere
-	 * */
-	synchronized public void unite(Partition partition) {
-
-		this.P.addAll(partition.P);
-	}
 
 	/**
-	 * Returns the first block in the toDo-list and waits if none are present
-	 * 
-	 * @throws InterruptedException
-	 *             ()
-	 * 
-	 * 
+	 * Removes one block from the toDo_list and then notifies all Threads.
+	 * The notifying is important for termination purposes.
+	 *   
 	 * */
 	synchronized public void removeBlock_fromList(Set<Vertex> block) {
 
@@ -121,13 +89,14 @@ public class Partition {
 
 	}
 
+
 	synchronized public Set<Set<Vertex>> getBlocks() {
 
 		return P;
 	}
 
 	/**
-	 * Adds a block to the toDo-list
+	 * Adds a block to the toDo-list. Waits if the list is full, i.e. size == Integer.MAX_VALUE.
 	 * 
 	 * @param The
 	 *            block to add
@@ -154,7 +123,7 @@ public class Partition {
 	 * @param block2
 	 *            One of the two blocks to be added
 	 * 
-	 * 
+	 * @throws InterruptedException
 	 * */
 
 	synchronized public void replaceBlock(Set<Vertex> block0,
@@ -169,7 +138,9 @@ public class Partition {
 		notifyAll();
 	}
 
-	
+	/**Used for debugging purposes only, not needed in the final program.
+	 * 
+	 * */
 	synchronized public String toString(){
 		
 		while(!isDone()){

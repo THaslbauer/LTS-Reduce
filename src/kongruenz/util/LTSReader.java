@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,22 +16,29 @@ import kongruenz.LTS;
 import kongruenz.objects.LabeledEdge;
 import kongruenz.objects.Vertex;
 
+
+/**This class provides 
+ * 
+ * */
 public class LTSReader {
 
 	private String input;
 	private LTS output;
 
 	/**
-	 * Translates the input String[] into an LTS
+	 * Translates the input String into an LTS
 	 * 
 	 * @return The LTS represented by the given input String[]
-	 * 
+	 * @author Jere
 	 * 
 	 * 
 	 * */
 	public LTS generateLTSfromJSON() {
 
-			// -----------------------------------------------------------------//
+		if (output != null)
+			return output;
+		
+		// -----------------------------------------------------------------//
 		// --------------Variables used in this method----------------------//
 		
 		String LTSText = input;
@@ -76,15 +84,16 @@ public class LTSReader {
 
 	/**
 	 * This method is needed to circumvent the issues with symbols which need
-	 * escaping that one runs into when using the args array. Due to the fact
+	 * escaping, that one runs into when using the args array. Due to the fact
 	 * that pseuCo adds a few empty lines to every JSON export, this method
 	 * skips these lines and jumps straight to the important text part.
 	 * 
 	 * @return returns the String
+	 * @throws UnsupportedEncodingException  in case UTF-8 is not supported
 	 * */
-	public static String getString() {
+	public static String getString() throws UnsupportedEncodingException {
 
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
 
 		String str = "";
 		while (str.equals("")) {

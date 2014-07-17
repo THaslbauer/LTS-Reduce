@@ -1,5 +1,7 @@
 package reduceTaskTests;
 
+import java.io.UnsupportedEncodingException;
+
 import kongruenz.LTS;
 import kongruenz.Partition;
 import kongruenz.ReduceTask;
@@ -16,7 +18,7 @@ public class ReduceTests {
 	
 	
 	@BeforeClass
-	public static void setUpBeforeClass(){
+	public static void setUpBeforeClass() throws UnsupportedEncodingException{
 		
 		LTSReader reader = new LTSReader(LTSReader.getString());
 		testLTS = reader.generateLTSfromJSON();

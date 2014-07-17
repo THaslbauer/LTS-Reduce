@@ -23,6 +23,13 @@ public class ReduceTask extends RecursiveAction {
 
 	}
 
+	
+	/**Goes through the algorithm with one fixed block and makes changes to the partition.
+	 * This method is run when the ReducedTask is invoked or forked.
+	 * 
+	 * @author Jere
+	 * 
+	 * */
 	@Override
 	public void compute() {
 
@@ -30,8 +37,10 @@ public class ReduceTask extends RecursiveAction {
 		Set<Vertex> block1 = new HashSet<Vertex>();
 		Set<Vertex> block2 = new HashSet<Vertex>();
 		
+		//---------------go through all blocks in the partition using the algorithm---------------------//
+		//------------------------------------------------------------------------------------------------//
+
 		here: for (Action action : partition.getLTS().getActions()) {
-			if(action != Action.TAU)
 
 			for (Set<Vertex> test_block : partition.getBlocks()) {
 
@@ -44,11 +53,15 @@ public class ReduceTask extends RecursiveAction {
 
 				}
 
+				//-------------------create block1 = Intersection(Pre(a,B'), B) and block2 = Exclusion(B,Pre(a,B'))
+				
 				block1 = new HashSet<Vertex>(pre_states);
 				block1.retainAll(block);
 				block2 = new HashSet<Vertex>(block);
 				block2.removeAll(pre_states);
 
+				//---------------see if the splitting condition is fulfilled--------------------------//
+				
 				if (!(block1.isEmpty() || block2.isEmpty())) {
 
 					split = true;
@@ -59,18 +72,27 @@ public class ReduceTask extends RecursiveAction {
 
 		}
 
+		//--------------if the block has to be split, replace it and re-check the blocks that have transitions to it------//
+		//----------------------------------------------------------------------------------------------------------------//
+		
 		if (split) {
 
+			//---------------replace block---------------//
+			
 			try {
 				partition.replaceBlock(block, block1, block2);
 			} catch (InterruptedException e) {
 
 			}
+
+			//--------------find out which blocks to look at again-------------//
 			
 			Set<Set<Vertex>> preBlocks = getPreBlocksOfBlock(block);
+
+			//--------------add these blocks to the queue and fork a reduce task for every one------//
 			
-			for (Set<Vertex> block : preBlocks){
-				
+			for (Set<Vertex> block : preBlocks) {
+
 				try {
 					partition.putBlock(block);
 				} catch (InterruptedException e) {
@@ -79,8 +101,10 @@ public class ReduceTask extends RecursiveAction {
 				}
 				ReduceTask reduce0 = new ReduceTask(partition, block);
 				reduce0.fork();
-				
+
 			}
+			
+			//------------fork one new ReduceTask for block1 and start a second one for block2 on this thread------//
 
 			ReduceTask reduce1 = new ReduceTask(partition, block1);
 			reduce1.fork();
@@ -90,27 +114,38 @@ public class ReduceTask extends RecursiveAction {
 
 		}
 
+		//---------------in case the block is not to be split, remove it from the toDo_list---------------------//
+
 		else {
 			System.err.println(block.toString());
 			partition.removeBlock_fromList(block);
-			synchronized (partition) {
-				System.err.println("Notifying");
-				partition.notifyAll();
-			}
+			
 
 		}
 		return;
 	}
 
-	
-	
+	/**
+	 * After splitting a block, the reduction algorithm requires you to look
+	 * again at all blocks that can transition to the split one. Given a block,
+	 * this method returns all blocks that need to be re-checked.
+	 * 
+	 * @param block
+	 *            The block that's about to be split.
+	 * @return All blocks that need looking at after it's been split.
+	 * 
+	 * 
+	 * */
 	private Set<Set<Vertex>> getPreBlocksOfBlock(Set<Vertex> block) {
 
-		Set<Vertex> presOfBlock = new HashSet<Vertex>(); //Pres of the argument block
-		Set<Set<Vertex>> preBlocks = new HashSet<Set<Vertex>>();//Set of blocks that need to be checked
+		Set<Vertex> presOfBlock = new HashSet<Vertex>(); // Pres of the argument
+															// block
+		Set<Set<Vertex>> preBlocks = new HashSet<Set<Vertex>>();// Set of blocks
+																// that need to
+																// be checked
 
-		//get the pres of block
-		
+		// get the pres of block
+
 		for (Action action : partition.getLTS().getActions()) {
 
 			for (Vertex vertex : block) {
@@ -119,20 +154,20 @@ public class ReduceTask extends RecursiveAction {
 			}
 		}
 
-		//get the preBlocks to be returned
-		
+		// get the preBlocks to be returned
+
 		for (Set<Vertex> pBlock : partition.getBlocks()) {
-			
-			for (Vertex vertex : presOfBlock){
-				
-				if (pBlock.contains(vertex)){
-					
+
+			for (Vertex vertex : presOfBlock) {
+
+				if (pBlock.contains(vertex)) {
+
 					preBlocks.add(pBlock);
 				}
 			}
 
 		}
-		
+
 		return preBlocks;
 
 	}

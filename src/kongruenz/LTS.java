@@ -174,7 +174,12 @@ public class LTS extends Graph{
 			return false;
 		return true;
 	}
-	
+	/**
+	 * Converts this LTS into a JsonObject
+	 * @return This LTS as a JsonObject
+	 * @author Jere
+	 * 
+	 * */
 	public JsonObject ToJson(){
 		
 		
