@@ -1,14 +1,30 @@
 package kongruenz.objects;
 
+
+/**
+ * A Basic representation of a Vertex as an object.
+ * Just wraps a string.
+ * @author Thomas
+ *
+ */
 public class Vertex {
 	final private String name;
 	
+	
+	/**
+	 * Takes name of Vertex as string.
+	 * @param name
+	 */
 	public Vertex(String name) {
 		if(name == null)
 			throw new IllegalArgumentException("State needs a name!");
 		this.name = name;
 	}
 	
+	/**
+	 * Returns the name.
+	 * @return
+	 */
 	public String getName() {
 		return this.name;
 	}

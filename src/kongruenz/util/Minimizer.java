@@ -23,6 +23,11 @@ import kongruenz.objects.Action;
 import kongruenz.objects.LabeledEdge;
 import kongruenz.objects.Vertex;
 
+/**
+ * Minimizer for LTS
+ * @author Thomas
+ *
+ */
 public class Minimizer {
 	private ThreadPoolExecutor threads;
 	private int workercount = Runtime.getRuntime().availableProcessors()+2;
@@ -32,6 +37,12 @@ public class Minimizer {
 		threads = new ThreadPoolExecutor(this.workercount, this.workercount, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 	}
 	
+	/**
+	 * Takes an LTS and a Partition and minimizes the LTS according to the partition
+	 * @param toMinimize
+	 * @param p
+	 * @return The minminal choice-congruent LTS to the input LTS according to the partition
+	 */
 	public LTS minimize(LTS toMinimize, Partition p){
 		return this.reduceEdges(this.collapse(toMinimize, p));
 	}
@@ -40,7 +51,7 @@ public class Minimizer {
 	 * Collapses a given LTS to a smaller one by combining the Vertices blockwise.
 	 * @param toMinimize The LTS to collapse
 	 * @param p The Partition that defines the collapse operation.
-	 * @return
+	 * @return LTS that has all the nodes combined according to the partition
 	 */
 	private LTS collapse(LTS toMinimize, Partition p){
 		//TODO remove
@@ -71,21 +82,35 @@ public class Minimizer {
 		comm.moreWorkToDo();
 		//TODO remove
 		System.err.println("now collapsing");
+		
+		//Walk over the original LTS starting at the initial state, adding visited edges and states
 		threads.execute(new LTSGenerator(threads, comm, graphMon, toMinimize.getStart(), toMinimize, stateName));
 		comm.waitForDone();
 		//TODO remove
 		System.err.println("edges are:\n"+graphMon.getEdges());
 		System.err.println("vertices are:\n"+graphMon.getVertices());
+		
+		//return an LTS made out of visited states and edges
 		return new LTS(graphMon.getVertices(), graphMon.getEdges(), new Vertex(stateName.get(toMinimize.getStart())));
 	}
 	
+	
+	/**
+	 * Removes redundant edges from an LTS
+	 * @param lts
+	 * @return
+	 */
 	private LTS reduceEdges(LTS lts){
 		//TODO remove
 		System.err.println("reducing graph");
 		Map<Action, Future<Set<LabeledEdge>>> edgesByAction = new HashMap<>();
+		
+		//Combine sets of each edge via a Future
 		for(Action a : lts.getActions()){
 			edgesByAction.put(a, threads.submit(new EdgeCombiner(lts, a, lts.getEdgesWithAction(a))));
 		}
+		
+		//get all the edges and put them into a common set
 		Set<LabeledEdge> edgesForGraph = new HashSet<>();
 		for(Action a : edgesByAction.keySet()){
 			try{
@@ -103,6 +128,9 @@ public class Minimizer {
 		return new LTS(lts.getVertices(), edgesForGraph, lts.getStart());
 	}
 	
+	/**
+	 * does a hard shutdown on the threadpool
+	 */
 	public void shutdown(){
 		threads.shutdownNow();
 		try{
@@ -138,9 +166,7 @@ public class Minimizer {
 			for(Vertex v : vertices){
 				//TODO remove
 				System.err.println("mapping "+v+" to "+name);
-				boolean hopeNotThis = map.put(v, name) == null;
-				assert(hopeNotThis);
-				hopeNotThis = !hopeNotThis;
+				map.put(v, name);
 			}
 			counter.countDown();
 		}
@@ -178,6 +204,8 @@ public class Minimizer {
 			String startName = namingKey.get(start);
 			//TODO remove
 			System.err.println(start+" mapped to "+startName);
+			
+			//add each edge to the new graph set if it isn't a τ-selfloop that doesn't originate at the initial state
 			for(LabeledEdge trans : lts.getEdgesWithStart(start)){
 				Vertex from = new Vertex(startName);
 				Vertex to = new Vertex(namingKey.get(trans.getEnd()));
@@ -269,11 +297,26 @@ public class Minimizer {
 			//TODO remove
 			System.err.println("combining edges with "+a);
 			int counter = 0;
+			//get each edge, look if another edge can do the job as well and if yes, remove it
 			while(counter < EdgesToCombine.size()){
 				LabeledEdge trans = EdgesToCombine.get(counter);
+				Set<LabeledEdge> edges = new HashSet<>(EdgesToCombine);
+				edges.remove(trans);
 				boolean removed = false;
+				
+				//look if another edge goes from the start state that does the job
+				for(LabeledEdge e : edges){
+					if(e.getStart().equals(trans.getStart()) && !removed
+							&& !e.getStart().equals(e.getEnd())
+							&& lts.getTauPost(e.getEnd()).contains(trans.getEnd())){
+						EdgesToCombine.remove(trans);
+						removed = true;
+					}
+				}
+				
+				//otherwise: look if an edge in the tauPost-states can do the job
 				for(Vertex post : lts.getTauPost(trans.getStart())){
-					if(!post.equals(trans.getStart())
+					if(!post.equals(trans.getStart()) && !removed
 							&& tauPostReachable(post, trans.getEnd())){
 						removed = true;
 						EdgesToCombine.remove(counter);
