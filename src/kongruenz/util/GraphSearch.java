@@ -55,8 +55,6 @@ public GraphSearch(final Graph graph){
 						if(trans.getLabel().equals(Action.TAU))
 							vertices.get(w).addPost(trans.getEnd());
 					}
-					//TODO remove
-					sysout("added tau-post to "+w+": "+vertices.get(w).getPost());
 					counter.countDown();
 				}
 			});
@@ -69,8 +67,6 @@ public GraphSearch(final Graph graph){
 		System.err.println(e.getStackTrace());
 	}
 	Communicator comm = new Communicator(threads);
-	//TODO remove
-	sysout("proliferating forward");
 	
 	//Proliferating for each vertex v Pre(v, τ)
 	for(Vertex v : graph.getVertices()){
@@ -84,9 +80,10 @@ public GraphSearch(final Graph graph){
 			threads.execute(new Proliferator(v, preTau, threads, comm, true));
 		}
 	}
-	comm.waitForDone();
-	//TODO remove
-	sysout("proliferating backwards");
+	if(comm.waitForDone()){
+		threads.shutdownNow();
+		throw new UnsupportedOperationException();
+	}
 	
 	//For each vertex v: add its weak Pre(v, τ) (calculated in the loop before) to its weak post nodes.
 	for(Vertex v: graph.getVertices()){
@@ -104,7 +101,10 @@ public GraphSearch(final Graph graph){
 			});
 		}
 	}
-	comm.waitForDone();
+	if(comm.waitForDone()){
+		threads.shutdownNow();
+		throw new UnsupportedOperationException();
+	}
 	threads.shutdown();
 }
 
@@ -140,8 +140,6 @@ private class Proliferator implements Runnable{
 		if(pre){
 			//if something was added, proliferate to post nodes
 			if(vertices.get(vert).addPre(verticesToAdd)){
-				//TODO remove
-				sysout("proliferating pre of "+vert+": "+verticesToAdd);
 				for(Vertex v : vertices.get(vert).getPost()){
 					comm.moreWorkToDo();
 					synchronized(threads){
@@ -153,8 +151,6 @@ private class Proliferator implements Runnable{
 		else{
 			//if something was added, proliferate to post nodes
 			if(vertices.get(vert).addPost(verticesToAdd)){
-				//TODO remove
-				sysout("proliferating post of "+vert+": "+verticesToAdd);
 				for(Vertex v : vertices.get(vert).getPre()){
 					comm.moreWorkToDo();
 					synchronized(threads){

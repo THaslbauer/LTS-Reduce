@@ -61,7 +61,6 @@ public class Partition {
 			try {
 				wait();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				System.err.println(e.getStackTrace());
 				return null;
 			}
@@ -147,8 +146,7 @@ public class Partition {
 			try {
 				wait();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println(e.getStackTrace());
 			}
 		}
 		

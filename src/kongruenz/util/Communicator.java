@@ -18,33 +18,28 @@ private int workCount;
 	}
 	
 	synchronized public void moreWorkToDo(){
-		//TODO remove
-		System.err.println("more work");
 		workCount++;
-		//TODO remove
-		System.err.println("work is now: "+workCount);
 	}
 	
 	synchronized public void lessWorkToDo(){
-		//TODO remove
-		System.err.println("less work");
 		workCount--;
 		notifyAll();
-		//TODO remove
-		System.err.println("work is now: "+workCount);
 	}
 	
 	/**
 	 * Waits till all the workers are done and the queue for tasks is empty.
 	 */
-	synchronized public void waitForDone(){
+	synchronized public boolean waitForDone(){
+		boolean ret = false;
 		while(!(workCount == 0 && threads.getQueue().peek() == null)){
 			try{
 				wait();
 			}
 			catch(InterruptedException e){
 				System.err.println(e.getStackTrace());
+				ret = true;
 			}
 		}
+		return ret;
 	}
 }

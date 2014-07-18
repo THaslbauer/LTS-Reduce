@@ -82,7 +82,8 @@ public class ReduceTask extends RecursiveAction {
 			try {
 				partition.replaceBlock(block, block1, block2);
 			} catch (InterruptedException e) {
-
+				System.err.println(e.getStackTrace());
+				return;
 			}
 
 			//--------------find out which blocks to look at again-------------//
@@ -96,8 +97,8 @@ public class ReduceTask extends RecursiveAction {
 				try {
 					partition.putBlock(block);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					System.err.println(e.getStackTrace());
+					return;
 				}
 				ReduceTask reduce0 = new ReduceTask(partition, block);
 				reduce0.fork();
@@ -117,7 +118,6 @@ public class ReduceTask extends RecursiveAction {
 		//---------------in case the block is not to be split, remove it from the toDo_list---------------------//
 
 		else {
-			System.err.println(block.toString());
 			partition.removeBlock_fromList(block);
 			
 

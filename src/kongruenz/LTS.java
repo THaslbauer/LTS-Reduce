@@ -49,9 +49,6 @@ public class LTS extends Graph{
 		if(start.equals(end) && act.equals(Action.TAU))
 			return true;
 		for(LabeledEdge trans : this.edgesByAction.get(act)){
-			//TODO remove
-			System.out.println(searcher.getPreWithTau(trans.getStart()));
-			System.out.println(searcher.getPostWithTau(trans.getEnd()));
 			if(trans.getStart().equals(start) && trans.getEnd().equals(end))
 				return true;
 			if(trans.getStart().equals(start) && searcher.getPostWithTau(trans.getEnd()).contains(end))

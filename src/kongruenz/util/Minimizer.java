@@ -54,8 +54,6 @@ public class Minimizer {
 	 * @return LTS that has all the nodes combined according to the partition
 	 */
 	private LTS collapse(LTS toMinimize, Partition p){
-		//TODO remove
-		System.err.println("collapsing graph");
 		CountDownLatch counter = new CountDownLatch(p.getBlocks().size());
 		int vertexNumber = 0;
 		Map<Vertex, String> stateName = new ConcurrentHashMap<>(toMinimize.getVertices().size(), 0.75f, workercount);
@@ -72,23 +70,17 @@ public class Minimizer {
 			this.threads = new ThreadPoolExecutor(this.workercount, this.workercount, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 			return null;
 		}
-		//TODO remove
-		System.err.println("name mapping now done, mapping is:");
-		for(Vertex v : stateName.keySet()){
-			System.err.println(v+" to "+stateName.get(v));
-		}
 		Communicator comm = new Communicator(threads);
 		GraphMonitor graphMon = new GraphMonitor();
 		comm.moreWorkToDo();
-		//TODO remove
-		System.err.println("now collapsing");
 		
 		//Walk over the original LTS starting at the initial state, adding visited edges and states
 		threads.execute(new LTSGenerator(threads, comm, graphMon, toMinimize.getStart(), toMinimize, stateName));
-		comm.waitForDone();
-		//TODO remove
-		System.err.println("edges are:\n"+graphMon.getEdges());
-		System.err.println("vertices are:\n"+graphMon.getVertices());
+		if(comm.waitForDone()){
+			this.shutdown();
+			this.threads = new ThreadPoolExecutor(this.workercount, this.workercount, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+			return null;
+		}
 		
 		//return an LTS made out of visited states and edges
 		return new LTS(graphMon.getVertices(), graphMon.getEdges(), new Vertex(stateName.get(toMinimize.getStart())));
@@ -101,8 +93,6 @@ public class Minimizer {
 	 * @return
 	 */
 	private LTS reduceEdges(LTS lts){
-		//TODO remove
-		System.err.println("reducing graph");
 		Map<Action, Future<Set<LabeledEdge>>> edgesByAction = new HashMap<>();
 		
 		//Combine sets of each edge via a Future
@@ -164,8 +154,6 @@ public class Minimizer {
 		
 		public void run(){
 			for(Vertex v : vertices){
-				//TODO remove
-				System.err.println("mapping "+v+" to "+name);
 				map.put(v, name);
 			}
 			counter.countDown();
@@ -202,8 +190,6 @@ public class Minimizer {
 		 */
 		public void run(){
 			String startName = namingKey.get(start);
-			//TODO remove
-			System.err.println(start+" mapped to "+startName);
 			
 			//add each edge to the new graph set if it isn't a τ-selfloop that doesn't originate at the initial state
 			for(LabeledEdge trans : lts.getEdgesWithStart(start)){
@@ -211,8 +197,6 @@ public class Minimizer {
 				Vertex to = new Vertex(namingKey.get(trans.getEnd()));
 				if(!(from.equals(to) && !this.start.equals(lts.getStart())
 						&& trans.getLabel().equals(Action.TAU))){
-					//TODO remove
-					System.err.println("going from "+from+" to "+to+" with "+trans.getLabel());
 					graph.updateMonitor(new LabeledEdge(from, to, trans.getLabel()));
 				}
 				if(!graph.visited(trans.getEnd())){
@@ -248,8 +232,6 @@ public class Minimizer {
 		 * @return True if something was updated
 		 */
 		public boolean updateMonitor(LabeledEdge edge){
-			//TODO remove
-			System.err.println("adding edge "+edge);
 			boolean a =  vertices.add(edge.getStart());
 			boolean b = vertices.add(edge.getEnd());
 			boolean c = edges.add(edge);
@@ -294,8 +276,6 @@ public class Minimizer {
 		}
 		
 		public Set<LabeledEdge> call(){
-			//TODO remove
-			System.err.println("combining edges with "+a);
 			int counter = 0;
 			//get each edge, look if another edge can do the job as well and if yes, remove it
 			while(counter < EdgesToCombine.size()){
