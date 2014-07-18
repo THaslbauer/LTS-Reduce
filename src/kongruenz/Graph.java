@@ -107,7 +107,6 @@ public abstract class Graph {
 	
 	
 	
-	//TODO: look into the methods using this if removing the start vertex itself causes problems
 	/**
 	 * Returns the direct followers of a given vertex
 	 * @param start The Vertex to calculate Post of
@@ -115,10 +114,6 @@ public abstract class Graph {
 	 */
 	public Set<Vertex> post(Vertex start){
 		Set<Vertex> reach = new HashSet<Vertex>();
-/*		for(LabeledEdge trans : this.edges){
-			if(start.equals(trans.getStart()))
-				reach.add(trans.getEnd());
-		}*/
 		if(this.edgesByStart.get(start) == null)
 			return reach;
 		for(LabeledEdge trans : this.edgesByStart.get(start)){
@@ -135,10 +130,6 @@ public abstract class Graph {
 	 */
 	public Set<Vertex> pre(Vertex start){
 		Set<Vertex> reach = new HashSet<Vertex>();
-/*		for(LabeledEdge trans : this.edges){
-			if(start.equals(trans.getEnd()))
-				reach.add(trans.getStart());
-		}*/
 		if(this.edgesByEnd.get(start) == null)
 			return reach;
 		for(LabeledEdge trans : this.edgesByEnd.get(start)){

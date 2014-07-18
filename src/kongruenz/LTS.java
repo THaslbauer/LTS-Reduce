@@ -96,30 +96,6 @@ public class LTS extends Graph{
 		return pre;
 	}
 
-	/*
-	private boolean taureachableWith(Vertex start, Vertex end, Action act, Set<Vertex> visited){
-		if(reachableWith(start, end, act))
-			return true;
-		Set<Vertex> reach = post(start);
-		boolean found = false;
-		for(Vertex state : reach){
-//			synchronized(visited){
-			//TODO: erroneous code, what if this happens: 1 to 1 with b, 1 to 2 with tau, looking for 1 to 2 with b
-				if(!(visited.contains(state))){
-					if(getTransitions(start, state).contains(new LabeledEdge(start, state, Action.TAU))){
-						visited.addAll(reach);
-						found |= taureachableWith(state, end, act, visited);
-					}
-					if(getTransitions(start, state).contains(new LabeledEdge(start, state, act))){
-						found |= taureachableWith(state, end, Action.TAU);
-					}
-				}
-//			}
-		}
-		return found;
-	}*/
-	
-
 	public Vertex getStart(){
 		return start;
 	}
