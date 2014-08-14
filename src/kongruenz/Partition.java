@@ -27,6 +27,7 @@ public class Partition {
 	private Set<Set<Vertex>> P;
 	private List<Set<Vertex>> toDo_list;
 	private LTS lts;
+	private List<Set<Vertex>> beingWorkedOn;
 
 	public Partition(LTS lts) {
 
@@ -36,8 +37,32 @@ public class Partition {
 
 		toDo_list = new ArrayList<Set<Vertex>>();
 		toDo_list.add(lts.getModVertices());
+		beingWorkedOn = new ArrayList<Set<Vertex>>();
 	}
 
+	
+	synchronized public void workingOn(Set<Vertex> block){
+		
+		beingWorkedOn.add(block);
+	}
+	
+	synchronized public void noLongerWorkingOn(Set<Vertex> block){
+		
+		beingWorkedOn.remove(block);
+	}
+	
+	synchronized public boolean inQ(Set<Vertex> block){
+		
+		return toDo_list.contains(block);
+	}
+	
+	
+	synchronized public boolean isBeingWorkedOn(Set<Vertex> block){
+		
+		return beingWorkedOn.contains(block);
+	}
+	
+	
 	synchronized public LTS getLTS() {
 		return lts;
 	}
