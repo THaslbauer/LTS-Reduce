@@ -94,6 +94,8 @@ public class ReduceTask extends RecursiveAction {
 			
 			for (Set<Vertex> block : preBlocks) {
 
+				if (!block.equals(block1) && !block.equals(block2) && !block.equals(this.block) && block.size() > 1 && (!partition.inQ(block) || partition.isBeingWorkedOn(block))){
+				
 				try {
 					partition.putBlock(block);
 				} catch (InterruptedException e) {
@@ -103,16 +105,34 @@ public class ReduceTask extends RecursiveAction {
 				ReduceTask reduce0 = new ReduceTask(partition, block);
 				reduce0.fork();
 
+				}
 			}
 			
 			//------------fork one new ReduceTask for block1 and start a second one for block2 on this thread------//
 
+			if (!(block1.size() == 1)){
 			ReduceTask reduce1 = new ReduceTask(partition, block1);
 			reduce1.fork();
 
+			}
+			
+			else {
+				System.err.println(block.toString());
+				partition.removeBlock_fromList(block1);
+				
+			}
+			
+			if (!(block2.size() == 1)){
 			ReduceTask reduce2 = new ReduceTask(partition, block2);
 			reduce2.compute();
 
+			}
+			
+			else {
+				System.err.println(block.toString());
+				partition.removeBlock_fromList(block2);
+			}
+			
 		}
 
 		//---------------in case the block is not to be split, remove it from the toDo_list---------------------//
