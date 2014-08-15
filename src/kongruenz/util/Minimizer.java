@@ -302,6 +302,8 @@ public class Minimizer {
 				Set<Vertex> tauPost = lts.getTauPost(trans.getStart());
 				for(LabeledEdge e : edges){
 					if(!removed && tauPost.contains(e.getStart())
+							//prevent tau-selfloops from sabotaging the removal: transitions that start from the same node are handled in the first loop, not in this
+							&& !e.getStart().equals(trans.getStart())
 							&& (e.getEnd().equals(trans.getEnd())|| lts.getTauPost(e.getEnd()).contains(trans.getEnd()))){
 						removed = true;
 						EdgesToCombine.remove(counter);
@@ -312,6 +314,8 @@ public class Minimizer {
 				if(!removed){
 					counter++;
 				}
+				else
+					System.err.println("removed "+trans);
 			}
 			return new HashSet<LabeledEdge>(EdgesToCombine);
 		}
