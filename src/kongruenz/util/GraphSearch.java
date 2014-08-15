@@ -89,18 +89,15 @@ public GraphSearch(final Graph graph){
 	for(Vertex v: graph.getVertices()){
 		final Vertex w = v;
 		final Communicator fcomm = comm;
-		synchronized(threads){
-			threads.execute(new Runnable(){
-				public void run(){
-					fcomm.moreWorkToDo();
-					for(Vertex u : vertices.get(w).getPre()){
-						System.err.println("adding "+w+" as Post to "+u);
-						vertices.get(u).addPost(w);
-					}
-					fcomm.lessWorkToDo();
+		fcomm.moreWorkToDo();
+		threads.execute(new Runnable(){
+			public void run(){
+				for(Vertex u : vertices.get(w).getPre()){
+					vertices.get(u).addPost(w);
 				}
-			});
-		}
+				fcomm.lessWorkToDo();
+			}
+		});
 	}
 	if(comm.waitForDone()){
 		threads.shutdownNow();

@@ -42,6 +42,8 @@ public abstract class Graph {
 			this.edgesByEnd.put(vertex, new HashSet<LabeledEdge>());
 		}
 		for(LabeledEdge trans : edges){
+			assert(edgesByStart.keySet().contains(trans.getStart()));
+			assert(edgesByEnd.keySet().contains(trans.getEnd()));
 			this.edgesByStart.get(trans.getStart()).add(trans);
 			this.edgesByEnd.get(trans.getEnd()).add(trans);
 			if(edgesByAction.get(trans.getLabel()) == null)
