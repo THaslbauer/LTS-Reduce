@@ -283,16 +283,13 @@ public class Minimizer {
 				boolean removed = false;
 				
 				//look if another edge goes from the start state that does the job
-				System.err.println("Now looking at edges starting from "+trans.getStart()+" with Action "+a);
 				for(LabeledEdge e : edges){
-					System.err.println("Looking if "+e+" can replace "+trans);
 					if(!removed && e.getStart().equals(trans.getStart())
 							//this line prevents tau-selfloops from deleting a needed tau-edge
 							&& !(e.getStart().equals(e.getEnd()) && this.a.equals(Action.TAU))
 							&& (lts.getTauPost(e.getEnd()).contains(trans.getEnd()) ||
 									//this case shouldn't exist
 									e.getEnd().equals(trans.getEnd()))){
-						System.err.println(e.toString()+" could replace "+trans);
 						EdgesToCombine.remove(trans);
 						removed = true;
 					}
@@ -301,16 +298,11 @@ public class Minimizer {
 				}
 				
 				//otherwise: look if an edge in the tauPost-states can do the job
-				System.err.println("now looking at edges in tau-post");
 				//get the tau-post-states of the start state of trans
 				Set<Vertex> tauPost = lts.getTauPost(trans.getStart());
-				System.err.println("tauPost of "+trans.getStart()+" is "+tauPost);
 				for(LabeledEdge e : edges){
-					System.err.println("Looking if "+e+" can replace "+trans);
-					System.err.println(e.toString()+" "+tauPost.contains(e.getStart())+" "+e.getEnd().equals(trans.getEnd())+" "+lts.getTauPost(e.getEnd()).contains(trans.getEnd()));
 					if(!removed && tauPost.contains(e.getStart())
 							&& (e.getEnd().equals(trans.getEnd())|| lts.getTauPost(e.getEnd()).contains(trans.getEnd()))){
-						System.err.println(e.toString()+" could replace "+trans);
 						removed = true;
 						EdgesToCombine.remove(counter);
 					}
@@ -318,7 +310,6 @@ public class Minimizer {
 						break;
 				}
 				if(!removed){
-					System.err.println("didn't remove "+trans);
 					counter++;
 				}
 			}
