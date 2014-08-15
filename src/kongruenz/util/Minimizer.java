@@ -309,6 +309,8 @@ public class Minimizer {
 					System.err.println("Looking if "+e+" can replace "+trans);
 					System.err.println(e.toString()+" "+tauPost.contains(e.getStart())+" "+e.getEnd().equals(trans.getEnd())+" "+lts.getTauPost(e.getEnd()).contains(trans.getEnd()));
 					if(!removed && tauPost.contains(e.getStart())
+							//prevent tau-selfloops from sabotaging the removal: transitions that start from the same node are handled in the first loop, not in this
+							&& !e.getStart().equals(trans.getStart())
 							&& (e.getEnd().equals(trans.getEnd())|| lts.getTauPost(e.getEnd()).contains(trans.getEnd()))){
 						System.err.println(e.toString()+" could replace "+trans);
 						removed = true;
@@ -321,6 +323,8 @@ public class Minimizer {
 					System.err.println("didn't remove "+trans);
 					counter++;
 				}
+				else
+					System.err.println("removed "+trans);
 			}
 			return new HashSet<LabeledEdge>(EdgesToCombine);
 		}
