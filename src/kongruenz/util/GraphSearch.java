@@ -85,21 +85,19 @@ public GraphSearch(final Graph graph){
 		throw new UnsupportedOperationException();
 	}
 	
-	//For each vertex v: add its weak Pre(v, τ) (calculated in the loop before) to its weak post nodes.
+	//For each vertex v: add itself as weak Post(u, τ) for every weak pre-Node
 	for(Vertex v: graph.getVertices()){
 		final Vertex w = v;
 		final Communicator fcomm = comm;
-		synchronized(threads){
-			threads.execute(new Runnable(){
-				public void run(){
-					fcomm.moreWorkToDo();
-					for(Vertex u : vertices.get(w).getPost()){
-						vertices.get(u).addPre(vertices.get(w).getPre());
-					}
-					fcomm.lessWorkToDo();
+		fcomm.moreWorkToDo();
+		threads.execute(new Runnable(){
+			public void run(){
+				for(Vertex u : vertices.get(w).getPre()){
+					vertices.get(u).addPost(w);
 				}
-			});
-		}
+				fcomm.lessWorkToDo();
+			}
+		});
 	}
 	if(comm.waitForDone()){
 		threads.shutdownNow();

@@ -122,4 +122,11 @@ public class LTSTest {
 		reaches = cycle.taureachableWith(start, middle3, Action.TAU);
 		assertTrue("Has to get what a cycle is", reaches);
 	}
+	
+	@Test
+	public void tauCollection(){
+		GraphSearch test = new GraphSearch(linearThreeNodesOnlyTau);
+		System.out.println(test.getPreWithTau(end1));
+		System.out.println(test.getPostWithTau(start));
+	}
 }
