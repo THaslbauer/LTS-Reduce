@@ -70,10 +70,12 @@ public class Minimizer {
 		}
 		Communicator comm = new Communicator(threads);
 		GraphMonitor graphMon = new GraphMonitor();
-		comm.moreWorkToDo();
 		
 		//Walk over the original LTS starting at the initial state, adding visited edges and states
+		comm.moreWorkToDo();
 		threads.execute(new LTSGenerator(threads, comm, graphMon, toMinimize.getStart(), toMinimize, stateName));
+		
+		//if interrupted, shut down the work and return null
 		if(comm.waitForDone()){
 			this.shutdown();
 			this.threads = new ThreadPoolExecutor(this.workercount, this.workercount, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
@@ -94,6 +96,7 @@ public class Minimizer {
 		Map<Action, Future<Set<LabeledEdge>>> edgesByAction = new HashMap<>();
 		
 		//Combine sets of each edge via a Future
+		lts.initSearch();
 		for(Action a : lts.getActions()){
 			edgesByAction.put(a, threads.submit(new EdgeCombiner(lts, a, lts.getEdgesWithAction(a))));
 		}
@@ -193,6 +196,7 @@ public class Minimizer {
 			for(LabeledEdge trans : lts.getEdgesWithStart(start)){
 				Vertex from = new Vertex(startName);
 				Vertex to = new Vertex(namingKey.get(trans.getEnd()));
+				//add the edge if it isn't a τ-selfloop in the resulting graph at a state other than the start
 				if(!(from.equals(to) && !this.start.equals(lts.getStart())
 						&& trans.getLabel().equals(Action.TAU))){
 					graph.updateMonitor(new LabeledEdge(from, to, trans.getLabel()));
@@ -238,6 +242,7 @@ public class Minimizer {
 		
 		/**
 		 * Checks if Vertex v of the original LTS has been visited and if not marks it as visited.
+		 * Works thus similar to test-and-set-lock instructions and can be used to make a kind of lock
 		 * @param v
 		 * @return True if v was visited already.
 		 */

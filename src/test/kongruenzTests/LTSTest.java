@@ -1,4 +1,4 @@
-package kongruenzTests;
+package test.kongruenzTests;
 
 import static org.junit.Assert.*;
 

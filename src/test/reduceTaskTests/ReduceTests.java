@@ -1,4 +1,4 @@
-package reduceTaskTests;
+package test.reduceTaskTests;
 
 import java.io.UnsupportedEncodingException;
 

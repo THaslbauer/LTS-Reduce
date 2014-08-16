@@ -1,4 +1,4 @@
-package ReaderTests;
+package test.ReaderTests;
 
 import java.io.UnsupportedEncodingException;
 
