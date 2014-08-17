@@ -233,7 +233,7 @@ public class Minimizer {
 		 * @param edge The LabeledEdge that should get added to the final graph, the start and end vertices get added as well.
 		 * @return True if something was updated
 		 */
-		public boolean updateMonitor(LabeledEdge edge){
+		synchronized public boolean updateMonitor(LabeledEdge edge){
 			boolean a =  vertices.add(edge.getStart());
 			boolean b = vertices.add(edge.getEnd());
 			boolean c = edges.add(edge);
@@ -246,15 +246,15 @@ public class Minimizer {
 		 * @param v
 		 * @return True if v was visited already.
 		 */
-		public boolean visited(Vertex v){
+		synchronized public boolean visited(Vertex v){
 			return !visitedUncombinedVertices.add(v);
 		}
 		
-		public Set<LabeledEdge> getEdges(){
+		synchronized public Set<LabeledEdge> getEdges(){
 			return Collections.unmodifiableSet(edges);
 		}
 		
-		public Set<Vertex> getVertices(){
+		synchronized public Set<Vertex> getVertices(){
 			return Collections.unmodifiableSet(vertices);
 		}
 	}

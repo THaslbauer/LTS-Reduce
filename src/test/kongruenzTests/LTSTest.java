@@ -3,6 +3,7 @@ package test.kongruenzTests;
 import static org.junit.Assert.*;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -126,7 +127,25 @@ public class LTSTest {
 	@Test
 	public void tauCollection(){
 		GraphSearch test = new GraphSearch(linearThreeNodesOnlyTau);
-		System.out.println(test.getPreWithTau(end1));
-		System.out.println(test.getPostWithTau(start));
+		HashSet<Vertex> preOfEnd = new HashSet<>();
+		HashSet<Vertex> postOfStart = new HashSet<>();
+		preOfEnd.add(start);
+		preOfEnd.add(middle);
+		postOfStart.add(middle);
+		postOfStart.add(end1);
+		assert(test.getPreWithTau(end1).equals(preOfEnd));
+		assert(test.getPostWithTau(start).equals(postOfStart));
+		test = new GraphSearch(cycle);
+		HashSet<Vertex> middleConnect = new HashSet<>();
+		middleConnect.add(middle);
+		middleConnect.add(middle2);
+		middleConnect.add(middle3);
+		assert(test.getPostWithTau(middle).equals(middleConnect));
+		assert(test.getPostWithTau(middle2).equals(middleConnect));
+		assert(test.getPostWithTau(middle3).equals(middleConnect));
+		middleConnect.add(start);
+		assert(test.getPreWithTau(middle).equals(middleConnect));
+		assert(test.getPreWithTau(middle2).equals(middleConnect));
+		assert(test.getPreWithTau(middle3).equals(middleConnect));
 	}
 }
