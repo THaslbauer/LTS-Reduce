@@ -325,13 +325,5 @@ public class Minimizer {
 			return new HashSet<LabeledEdge>(EdgesToCombine);
 		}
 		
-		private boolean tauPostReachable(Vertex start, Vertex end){
-			for(LabeledEdge trans: this.EdgesToCombine){
-				if(trans.getStart().equals(start)
-						&& (trans.getEnd().equals(end) || lts.getTauPost(trans.getEnd()).contains(end)))
-					return true;
-			}
-			return false;
-		}
 	}
 }
