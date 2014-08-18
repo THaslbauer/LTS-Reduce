@@ -117,7 +117,7 @@ public class ReduceTask extends RecursiveAction {
 			}
 			
 			else {
-				System.err.println(block.toString());
+//				System.err.println(block.toString());
 				partition.removeBlock_fromList(block1);
 				
 			}
@@ -129,7 +129,7 @@ public class ReduceTask extends RecursiveAction {
 			}
 			
 			else {
-				System.err.println(block.toString());
+//				System.err.println(block.toString());
 				partition.removeBlock_fromList(block2);
 			}
 			
@@ -175,7 +175,6 @@ public class ReduceTask extends RecursiveAction {
 		}
 
 		// get the preBlocks to be returned
-
 		for (Set<Vertex> pBlock : partition.getBlocks()) {
 
 			for (Vertex vertex : presOfBlock) {

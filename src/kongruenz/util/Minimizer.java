@@ -319,8 +319,8 @@ public class Minimizer {
 				if(!removed){
 					counter++;
 				}
-				else
-					System.err.println("removed "+trans);
+//				else
+//					System.err.println("removed "+trans);
 			}
 			return new HashSet<LabeledEdge>(EdgesToCombine);
 		}
